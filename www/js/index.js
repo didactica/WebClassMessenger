@@ -335,7 +335,6 @@ var app = {
 			}
 			$(".loader").hide();
 		});
-		setTimeout(app.populateMessages(),5000);
 	}
 };
 
