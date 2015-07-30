@@ -46,7 +46,6 @@ Notificacion.prototype.insert = function(sql,data,callback){
 					query,
 					[self.id, self.remitente, self.receptor, self.mensaje, self.fecha, self.enviado, self.leido],
 					function(tx,result){
-						console.log(JSON.stringify(result));
 						if(callback){
 							callback();
 						}

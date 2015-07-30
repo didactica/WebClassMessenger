@@ -12,18 +12,18 @@
         <title>WebClass Messenger</title>
     </head>
     <body>
-		<div class="loader">
+		<div class="loader collapse">
 			<i class="fa fa-spinner fa-spin"></i>
 		</div>
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-md-12">
+				<div class="col-md-12 full-width">
 					<div id="chat-container">
 						<div class="heading">
-							<i class="fa fa-comments"></i> Chat
+							WebClass Messenger
 							<div class="btn-group pull-right">
-								<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-									<i class="fa fa-chevron-down"></i>
+								<button type="button" class="btn btn-link dropdown-toggle hide-login collapse" data-toggle="dropdown">
+									<i class="fa fa-ellipsis-v fa-inverse"></i>
 								</button>
 								<ul class="dropdown-menu slidedown">
 									<li><a href="#" id="btn-logout"><i class="fa fa-power-off"></i> Cerrar Sesi&oacute;n</a></li>
@@ -32,23 +32,33 @@
 						</div>
 						<div id="login-container" class="collapse">
 							<form id="login-form">
+								<h3 class="content-header">Login</h3>
+								<hr/>
 								<div class="form-group">
-									<label for="usuario">Usuario</label>
-									<input type="text" class="form-control input-lg" name="usuario" id="usuario" />
+									<input type="text" class="form-control input-lg" name="usuario" id="usuario"  placeholder="Usuario" />
 								</div>
 								<div class="form-group">
-									<label for="password">Contraseña</label>
-									<input type="password" class="form-control input-lg" name="password" id="password" />
+									<input type="password" class="form-control input-lg" name="password" id="password" placeholder="Clave"/>
 								</div>
 								<div class="form-group">
-									<button class="btn btn-info"><i class="fa fa-sign-in"></i> Entrar</button>
+									<button class="btn btn-info btn-lg"><i class="fa fa-sign-in"></i> Entrar</button>
 								</div>
+								<center>
+									<a href="#" onclick="window.open('http://proyecto.webescuela.cl/sistema/webclass/','_system','location=no');">Olvid&eacute; mi clave</a>
+								</center>
 							</form>
 						</div>
-						<div id="main-content">
+						<div id="main-content" class="hide-login collapse">
 							<div id="usuarios">
+								<div id="tabs-usuarios">
+									<ul class="nav nav-tabs hide-login collapse">
+										<li class="active"><a href="#">Usuarios</a></li>
+										<li><a href="#">Grupos</a></li>
+									</ul>
+								</div>
+								<div id="lista-usuarios"></div>
 							</div>
-							<div id="chat">
+							<div id="chat" class="collapse">
 								<div id="messages" class="messages">
 									<ul id="chat-window" class="chat">
 									</ul>
@@ -75,7 +85,7 @@
 					</p>
 					<div class="header">
 						<small class="pull-right text-muted">
-							{{time}}
+							{{time}} <i class="{{class}}"></i>
 						</small>
 					</div>
 				</div>
@@ -96,12 +106,12 @@
 			</li>
 		</script>
 		<script id="usuario-div" type="text/html">
-			<a href="#" data-rel="{{usuario}}" class="usuario clearfix">
+			<a href="#" data-rel="{{idusuario}}" class="usuario clearfix">
 				<div class="foto-usuario">
-					<img src="img/user.jpg" alt="usuario" class="img-circle img-responsive">
+					<img src="{{foto}}" alt="usuario" class="img-circle img-responsive">
 				</div>
 				<div class="detalle">
-					<strong>{{nombre_usuario}}</strong>
+					<strong>{{nombre}} {{apellido}}</strong>
 				</div>
 			</a>
 		</script>
@@ -110,6 +120,7 @@
         <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
         <script type="text/javascript" src="js/handlebars.js"></script>
+		<script type="text/javascript" src="js/contacto.js"></script>
 		<script type="text/javascript" src="js/notificacion.js"></script>
         <script type="text/javascript" src="js/index.js"></script>
         <script type="text/javascript">

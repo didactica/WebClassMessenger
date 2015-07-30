@@ -24,24 +24,11 @@ body {
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
     -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
-    background-color:#E4E4E4;
-    background-image:linear-gradient(top, #A7A7A7 0%, #E4E4E4 51%);
-    background-image:-webkit-linear-gradient(top, #A7A7A7 0%, #E4E4E4 51%);
-    background-image:-ms-linear-gradient(top, #A7A7A7 0%, #E4E4E4 51%);
-    background-image:-webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        color-stop(0, #A7A7A7),
-        color-stop(0.51, #E4E4E4)
-    );
-    background-attachment:fixed;
     font-family:'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
     font-size:12px;
     height:100%;
     margin:0px;
     padding:0px;
-    text-transform:uppercase;
     width:100%;
 }
 
@@ -157,16 +144,21 @@ h1 {
 	position:fixed;
 	top:0px;
 	width:100%;
-	padding:10px 19px;
+	padding:10px 5px 10px 19px;
 	left:0px;
 	background:rgb(22,128,202);
 	color:#fff;
 	font-weight:bolder;
+	height:4em;
+	line-height:2.5em;
+	display:table-cell;
+	vertical-align:middle;
+	z-index:999;
 }
 .messages{
 	min-height:70vh;
 	overflow-Y:auto;
-	margin:50px auto 60px;;
+	margin:60px auto 60px;
 	position:relative;
 	z-index:-1;
 }
@@ -243,27 +235,62 @@ ul#chat-window li.right:after{
 	margin-top: -10px;
 }
 #login-container{
-	min-height:100vh;
 	margin:60px auto;
-	overflow-Y:hidden;
+}
+#login-form{
+	padding:2em 1em;
+}
+#login-form .btn{
+	width:100%;
 }
 #usuarios{
-	min-height:80vh;
+	min-height:75vh;
 	overflow-Y:auto;
-	margin:50px auto;
+	margin:4em auto;
+}
+#lista-usuarios{
+	margin-top:3em;
 }
 .usuario{
-	border-bottom:1px solid #777777;
 	padding:1em;
 	display:block;
+	text-transform:capitalize;
 }
 .usuario .foto-usuario{
 	float:left;
-	height:4em;
-	width:4em;
+	height:3em;
+	width:3em;
 }
 .usuario .detalle{
-	float:left;
-	margin-left:5%;
-	line-height:4em;
+	margin-left:4em;
+	line-height:3em;
+	height:4em;
+	border-bottom:1px solid #bbb;
+}
+#tabs-usuarios .nav{
+	width:100%;
+	position:fixed;
+}
+#tabs-usuarios .nav li,
+#tabs-usuarios .nav li.active,
+#tabs-usuarios .nav li:visited{
+	width:50%;
+	text-align:center;
+	border:none;
+	background:rgb(22, 128, 202) none repeat scroll 0 0;
+	color:#fff!important;
+}
+#tabs-usuarios .nav li a{
+	background:rgb(22, 128, 202) none repeat scroll 0 0;
+	color:#fff!important;
+}
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover{
+	border:none!important;
+	-webkit-border-radius: 0px;
+	-moz-border-radius: 0px;
+	border-radius: 0px;
+}
+.full-width{
+	padding-left:0px!important;
+	padding-right:0px!important;
 }
