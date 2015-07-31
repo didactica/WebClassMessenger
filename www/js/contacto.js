@@ -14,7 +14,6 @@ Contacto.prototype.createTable = function(sql){
 				query,
 				[],
 				function(tx,result){
-					console.log(JSON.stringify(result));
 				},
 				function(tx,error){
 					console.log("ATENCION!!!");
@@ -55,7 +54,10 @@ Contacto.prototype.insert = function(sql,data,callback){
 	}
 }
 Contacto.prototype.select = function(sql,filter,callback){
-	var query = "SELECT * FROM contacto";
+	var query = "SELECT c.*,(select count(1) from notificacion n where n.remitente=c.id and n.leido=0) as mensajes,(select max(fecha) from notificacion n where n.remitente=c.id or n.receptor=c.id) as ultimafecha,(select n.mensaje from notificacion n where n.receptor=c.id or remitente=c.id order by id desc limit 1) as ultimomensaje FROM contacto c";
+	if( filter!=null ){
+		query += filter;
+	}
 	sql.transaction(
 		function(tx){
 			tx.executeSql(
@@ -65,6 +67,12 @@ Contacto.prototype.select = function(sql,filter,callback){
 					var contactos = [];
 					for( var i=0; i<result.rows.length; i++ ){
 						var curObj = result.rows.item(i);
+						if(curObj.mensajes==0){
+							delete curObj.mensajes;
+						}
+						if(typeof curObj.ultimomensaje!=='string'){
+							curObj.ultimomensaje = '';
+						}
 						var foto = new Image();
 						foto.src = curObj.foto;
 						contactos.push(curObj);

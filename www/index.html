@@ -20,13 +20,13 @@
 				<div class="col-md-12 full-width">
 					<div id="chat-container">
 						<div class="heading">
-							WebClass Messenger
+							<span id="titulo">WebClass</span>
 							<div class="btn-group pull-right">
 								<button type="button" class="btn btn-link dropdown-toggle hide-login collapse" data-toggle="dropdown">
 									<i class="fa fa-ellipsis-v fa-inverse"></i>
 								</button>
 								<ul class="dropdown-menu slidedown">
-									<li><a href="#" id="btn-logout"><i class="fa fa-power-off"></i> Cerrar Sesi&oacute;n</a></li>
+									<li><a href="#" id="btn-logout">Cerrar Sesi&oacute;n</a></li>
 								</ul>
 							</div>
 						</div>
@@ -85,7 +85,7 @@
 					</p>
 					<div class="header">
 						<small class="pull-right text-muted">
-							{{time}} <i class="{{class}}"></i>
+							{{time}} <i class="{{class}}" data-rel="{{id}}"></i>
 						</small>
 					</div>
 				</div>
@@ -111,7 +111,12 @@
 					<img src="{{foto}}" alt="usuario" class="img-circle img-responsive">
 				</div>
 				<div class="detalle">
-					<strong>{{nombre}} {{apellido}}</strong>
+					<p>
+						<strong>{{nombre}} {{apellido}}</strong>
+						<small class="muted pull-right">{{time}}</small>
+						<br/>
+						<span class="muted mensajepreview">{{mensaje}}</span>{{#if mensajes}}<small class="pull-right badge">{{mensajes}}</small>{{/if}}
+					</p>
 				</div>
 			</a>
 		</script>

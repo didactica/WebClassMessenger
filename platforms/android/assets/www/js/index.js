@@ -80,44 +80,35 @@ var app = {
 		// BDD
 		sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
 		secuencia = window.localStorage.getItem("secuencia")
-		var data = {
-			user:user
-		};
-		$.ajax({
-			url:url+"/gcm/list-users.php",
-			data:data,
-			dataType:'json',
-			type:'POST',
-			success:function(resp){
-				$("#lista-usuarios").html("");
-				for( var id in resp.usuarios ){
-					var c = new Contacto();
-					c.insert(sql,resp.usuarios[id]);
-				}
-				app.populateUsers();
-			},
-			error:function(resp){
-				console.log(JSON.stringify(resp));
-			}
-		});
+		app.populateUsers();
 		$("#login-container").hide();
 		$(".hide-login").show();
 		$("#main-content").show();
 		var contacto = new Contacto();
 		contacto.createTable(sql);
+		notificacion.createTable(sql);
+		app.downloadMessages();
 		$("#btn-logout").off("click");
 		$("#btn-logout").on("click",function(e){
-			sql.transaction(
-				function(tx){
-					tx.executeSql("DROP TABLE notificacion");
-					tx.executeSql("DROP TABLE contacto");
-				}
-			);
-			window.localStorage.clear();
-			receptor = null;
-			user = null;
-			app.onDeviceReady();
+			var pushNotification = window.plugins.pushNotification;
+			pushNotification.unregister(
+			function(){
+				app.setTitle();
+				sql.transaction(
+					function(tx){
+						tx.executeSql("DROP TABLE notificacion");
+						tx.executeSql("DROP TABLE contacto");
+					}
+				);
+				window.localStorage.clear();
+				receptor = null;
+				user = null;
+				app.onDeviceReady();
+			}, function(){
+				navigator.notification.alert("No se pudo realizar la acción",null,"Error");
+			});
 		});
+		app.setTitle();
 		app.receivedEvent('deviceready');
 		$(".loader").hide();
 		if( receptor==null ){
@@ -128,44 +119,15 @@ var app = {
 			$(".loader").show();
 			$("#usuarios").hide();
 			$("#chat").show();
-			notificacion.createTable(sql);
-			var params = {
-				user : user,
-				secuencia : secuencia
-			}
 			app.populateMessages();
-			$.ajax({
-				url : url+'/gcm/getMessages.php',
-				data: params,
-				type:'POST',
-				dataType:'json',
-				success: function(result){
-					if(result.status==0){
-						for( var id in result.messages ){
-							var mes = result.messages[id];
-							if( parseInt(mes.secuencia)>parseInt(secuencia) ){
-								secuencia = mes.secuencia;
-							}
-							var n = new Notificacion();
-							n.insert(sql,mes,function(){
-							});
-						}
-						window.localStorage.setItem("secuencia",secuencia);
-					} else {
-						console.log(result.errormessage);
-					}
-					app.populateMessages();
-				},
-				error: function(result){
-					$(".loader").hide();
-					console.log(JSON.stringify(result));
-				}
+			$("#inp-message").on("focus",function(){
+				app.readMessages();
 			});
 			$("#btn-enviar").off("click");
 			$("#btn-enviar").on("click",function(e){
 				$(".loader").show();
 				var message = $("#inp-message").val();
-				if( message.length>0 ){
+				if( message.length>0 || message!='' ){
 					var dt = new Date();
 					var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
 					var postData = {
@@ -182,6 +144,7 @@ var app = {
 						success:function(resp){
 							$(".loader").hide();
 							$("#inp-message").val("");
+							resp.data.class = "fa fa-ellipsis-h";
 							app.addMessage(resp.data);
 						},
 						error: function(){
@@ -211,7 +174,6 @@ var app = {
 		case 'registered':
 			if ( e.regid.length > 0 )
 			{
-				console.log("Regid " + e.regid);
 				var data = {
 					user : user, // FIXME: mandar la id del usuario actual
 					id: e.regid
@@ -222,7 +184,6 @@ var app = {
 					type: 'POST',
 					success : function(resp){
 						$(".loader").hide();
-						console.log('Id grabada');
 					}, 
 					error : function(resp,error){
 						console.log(JSON.stringify(resp));
@@ -231,37 +192,52 @@ var app = {
 			}
 			break;
 		case 'message':
-			$(".loader").show();
-			var params = {
-				user : user,
-				secuencia : secuencia,
-				leer:true
-			};
-			app.populateMessages();
-			$.ajax({
-				url : url+'/gcm/getMessages.php',
-				data : params,
-				dataType : 'json',
-				type : 'POST',
-				success : function(result){
-					if(result.status==0){
-						for( var id in result.messages ){
-							var mes = result.messages[id];
-							if( parseInt(mes.secuencia)>parseInt(secuencia) ){
-								secuencia = mes.secuencia;
+			if( e.payload.read=='true' || e.payload.read ){
+				if( e.payload.receptor==receptor ){
+					$(".fa.fa-ellipsis-h").removeClass("fa-ellipsis-h").addClass("fa-check");
+				}
+				var n = new Notificacion();
+				n.readMessages(sql,user,e.payload.receptor);
+			} else {
+				if( e.coldstart ){
+					receptor = e.payload.usuario;
+					app.initializeUser();
+					return;
+				}
+				var params = {
+					user : user,
+					secuencia : secuencia,
+					leer:true
+				};
+				$.ajax({
+					url : url+'/gcm/getMessages.php',
+					data : params,
+					type : 'POST',
+					dataType : 'json',
+					success : function(result){
+						if(result.status==0){
+							for( var id in result.messages ){
+								var mes = result.messages[id];
+								if( parseInt(mes.secuencia)>parseInt(secuencia) ){
+									secuencia = mes.secuencia;
+								}
+								var n = new Notificacion();
+								n.insert(sql,mes,function(){
+								});
 							}
-							var n = new Notificacion();
-							n.insert(sql,mes,function(){
-							});
+							window.localStorage.setItem("secuencia",secuencia);
 						}
-						window.localStorage.setItem("secuencia",secuencia);
-					}
-					app.populateMessages();
-				},
-				error : function(resp){
-					$(".loader").hide();
-				},
-			});
+						if(receptor!=null){
+							app.populateMessages();
+						} else {
+							app.populateUsers();
+						}
+					},
+					error : function(resp){
+						$(".loader").hide();
+					},
+				});
+			}
 			break;
 		case 'error':
 			alert('GCM error = '+e.msg);
@@ -270,24 +246,6 @@ var app = {
 			alert('An unknown GCM event has occurred');
 			break;
 		}
-	},
-	populateUsers: function(){
-		$("#lista-usuarios").html("");
-		var c = new Contacto();
-		c.select(sql,null,function(contactos){
-			for( var id in contactos ){
-				app.addUser(contactos[id]);
-			}
-			$(".usuario").off("click");
-			$(".usuario").on("click",function(e){
-				$(".loader").show();
-				$("#chat-window").html("");
-				e.preventDefault();
-				receptor = $(this).attr("data-rel");
-				app.initializeUser();
-				$(".loader").hide();
-			});
-		});
 	},
 	addMessage: function(data){
 		if( data.user!=user ){
@@ -303,29 +261,32 @@ var app = {
 		$("*").scrollTop($("#messages").height());
 	},
 	addUser: function(data){
+		if(typeof data.ultimafecha==='string'){
+			var t = (data.ultimafecha).split(/[- :]/);
+			data.time = timeSince(new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]));
+		} else {
+			data.time = 'Nunca';
+		}
+		if(data.ultimomensaje!=null){
+			data.mensaje = (data.ultimomensaje).substr(0, 10) + "\u2026";
+		} else {
+			data.mensaje = '';
+		}
 		var source = $("#usuario-div").html();
 		var template = Handlebars.compile(source);
 		var result = template(data);
 		$("#lista-usuarios").append(result);
 	},
 	populateMessages: function(){
-		var params = {
-			receptor: user,
-			remitente:receptor
-		}
-		$.ajax({
-			url : url+"/gcm/read.php",
-			data: params,
-			type: 'POST',
-			success: function(r){
-				console.log(JSON.stringify(r));
-			}
-		});
-		$("ul#chat-window").html("");
+		app.downloadMessages();
+		app.readMessages();
+		app.setTitle();
 		notificacion.select(sql,receptor,function(mensajes){
+			$("ul#chat-window").html("");
 			for( var id in mensajes ){
 				var mes = mensajes[id];
 				var data = {
+					id : mes.id,
 					user : mes.remitente,
 					time : mes.fecha,
 					message : mes.mensaje,
@@ -335,7 +296,122 @@ var app = {
 			}
 			$(".loader").hide();
 		});
-		setTimeout(app.populateMessages(),5000);
+	},
+	populateUsers: function(){
+		if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
+			var data = {
+				user:user
+			};
+			$.ajax({
+				url:url+"/gcm/list-users.php",
+				data:data,
+				dataType:'json',
+				type:'POST',
+				success:function(resp){
+					for( var id in resp.usuarios ){
+						var c = new Contacto();
+						c.insert(sql,resp.usuarios[id]);
+					}
+				},
+				error:function(resp){
+					console.log(JSON.stringify(resp));
+				}
+			});
+		}
+		var c = new Contacto();
+		c.select(sql,null,function(contactos){
+			$("#lista-usuarios").html("");
+			for( var id in contactos ){
+				app.addUser(contactos[id]);
+			}
+			$(".usuario").off("click");
+			$(".usuario").on("click",function(e){
+				$(".loader").show();
+				$("#chat-window").html("");
+				e.preventDefault();
+				receptor = $(this).attr("data-rel");
+				app.initializeUser();
+				$(".loader").hide();
+			});
+		});
+	},
+	downloadMessages: function(){
+		console.log("downloadMessages");
+		var params = {
+			user : user,
+			secuencia : secuencia
+		}
+		console.log(JSON.stringify(params));
+		if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
+			console.log("has connection");
+			$.ajax({
+				url : url+'/gcm/getMessages.php',
+				data : params,
+				type : 'POST',
+				dataType : 'json',
+				success : function(result){
+					console.log(JSON.stringify(result));
+					if(result.status==0){
+						for( var id in result.messages ){
+							var mes = result.messages[id];
+							if( parseInt(mes.secuencia)>parseInt(secuencia) ){
+								secuencia = mes.secuencia;
+							}
+							var n = new Notificacion();
+							n.insert(sql,mes,function(){
+							});
+						}
+						window.localStorage.setItem("secuencia",secuencia);
+					} else {
+						console.log(result.errormessage);
+					}
+				},
+				error: function(result){
+					$(".loader").hide();
+					console.log(JSON.stringify(result));
+				}
+			});
+		}
+	},
+	readMessages: function(){
+		var params = {
+			receptor: user,
+			remitente:receptor
+		}
+		$.ajax({
+			url : url+"/gcm/read.php",
+			data: params,
+			type: 'POST',
+			success: function(r){
+			},
+			error: function(e,error){
+				console.log(JSON.stringify(e));
+				console.log(error);
+			}
+		});
+	},
+	setTitle: function(){
+		var tDom = $("#titulo");
+		if( receptor!=null ){
+			var c = new Contacto();
+			var title = '';
+			var filter = " WHERE id='"+receptor+"'";// DEJAR SIEMPRE ESPACIO AL INICIO
+			c.select(sql,filter,function(result){
+				for( var id in result ){
+					var cObj = result[id];
+					if( typeof cObj !== 'undefined' ){
+						tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i></a>");
+						var foto = new Image();
+						foto.src = cObj.foto;
+						foto.className = "img-circle img-responsive"
+						tDom.append(foto);
+						tDom.append(cObj.nombre+" "+cObj.apellido);
+					}
+				}
+			});
+		} else {
+			tDom.html("WebClass");
+		}
 	}
 };
 

@@ -17,7 +17,6 @@ Notificacion.prototype.createTable = function(sql){
 				query,
 				[],
 				function(tx,result){
-					console.log(JSON.stringify(result));
 				},
 				function(tx,error){
 					console.log("ATENCION!!!");
@@ -58,6 +57,14 @@ Notificacion.prototype.insert = function(sql,data,callback){
 			}
 		);
 	}
+}
+Notificacion.prototype.readMessages = function(sql,rem,rec){
+	var query = "UPDATE notificacion SET leido='1' WHERE receptor='"+rec+"' AND remitente='"+rem+"' and leido='0'";
+	sql.transaction(
+		function(tx){
+			tx.executeSql(query);
+		}
+	);
 }
 Notificacion.prototype.select = function(sql,user,callback){
 	var query = "SELECT * FROM notificacion";
