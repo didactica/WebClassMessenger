@@ -144,7 +144,7 @@ h1 {
 	position:fixed;
 	top:0px;
 	width:100%;
-	padding:10px 5px 10px 10px;
+	padding:10px 0px 10px 10px;
 	left:0px;
 	background:rgb(22,128,202);
 	color:#fff;
@@ -266,9 +266,28 @@ ul#chat-window li.right:after{
 	background:#ccc;
 }
 .usuario .foto-usuario{
+	background-image:url(../img/user.jpg);
+	background-size:cover;
+	background-repeat: no-repeat;
+    background-position: center center;
 	float:left;
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
+    position: relative;
+	overflow:hidden;
 	height:4em;
 	width:4em;
+}
+.usuario .foto-usuario img{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 100%;
+  width: auto;
+  -webkit-transform: translate(-50%,-50%);
+      -ms-transform: translate(-50%,-50%);
+          transform: translate(-50%,-50%);
 }
 .usuario .detalle{
 	color:#000;
@@ -320,11 +339,31 @@ ul#chat-window li.right:after{
 #titulo{
 	font-size:1.2em;
 }
-#titulo img{
+#titulo .foto-usuario{
+	background-image:url(../img/user.jpg);
+	background-size:cover;
+	background-repeat: no-repeat;
+    background-position: center center;
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
 	float:left;
-	height:2em;
-	width:2em;
 	margin:0 0.5em;
+    position: relative;
+	overflow:hidden;
+	height:2.4em;
+	width:2.4em;
+	margin-top:-0.2em;
+}
+#titulo .foto-usuario img{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 100%;
+  width: auto;
+  -webkit-transform: translate(-50%,-50%);
+      -ms-transform: translate(-50%,-50%);
+          transform: translate(-50%,-50%);
 }
 #titulo i.fa{
 	font-weight:lighter!important;
@@ -334,4 +373,12 @@ ul#chat-window li.right:after{
 #titulo a.pull-left:visited{
 	font-size:1em;
 	color:#fff;
+}
+#btn-menu{
+	font-size:1.2em;
+	margin-top:-0.1em;
+	color:#fff;
+}
+#btn-menu:active{
+	background:rgba(100,100,100,0.4)
 }

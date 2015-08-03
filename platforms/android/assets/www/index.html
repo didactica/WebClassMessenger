@@ -22,8 +22,9 @@
 						<div class="heading">
 							<span id="titulo">WebClass</span>
 							<div class="btn-group pull-right">
-								<button type="button" class="btn btn-link dropdown-toggle hide-login collapse" data-toggle="dropdown">
-									<i class="fa fa-ellipsis-v fa-inverse"></i>
+								<button id="btn-menu" type="button" class="btn btn-link dropdown-toggle hide-login collapse" data-toggle="dropdown">
+									<span class="glyphicon glyphicon-option-vertical" aria-hidden="true"></span>
+									<!--<i class="fa fa-ellipsis-v fa-inverse"></i>-->
 								</button>
 								<ul class="dropdown-menu slidedown">
 									<li><a href="#" id="btn-logout">Cerrar Sesi&oacute;n</a></li>
@@ -108,7 +109,7 @@
 		<script id="usuario-div" type="text/html">
 			<a href="#" data-rel="{{idusuario}}" class="usuario clearfix">
 				<div class="foto-usuario">
-					<img src="{{foto}}" alt="usuario" class="img-circle img-responsive">
+					<img src="{{foto}}" alt="usuario">
 				</div>
 				<div class="detalle">
 					<p>

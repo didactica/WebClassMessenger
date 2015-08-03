@@ -121,6 +121,7 @@ var app = {
 			$("#chat").show();
 			app.populateMessages();
 			$("#inp-message").on("focus",function(){
+				$("*").scrollTop($("#messages").height());
 				app.readMessages();
 			});
 			$("#btn-enviar").off("click");
@@ -199,11 +200,6 @@ var app = {
 				var n = new Notificacion();
 				n.readMessages(sql,user,e.payload.receptor);
 			} else {
-				if( e.coldstart ){
-					receptor = e.payload.usuario;
-					app.initializeUser();
-					return;
-				}
 				var params = {
 					user : user,
 					secuencia : secuencia,
@@ -226,6 +222,10 @@ var app = {
 								});
 							}
 							window.localStorage.setItem("secuencia",secuencia);
+						}
+						if( e.coldstart ){
+							receptor = e.payload.usuario;
+							app.initializeUser();
 						}
 						if(receptor!=null){
 							app.populateMessages();
@@ -268,7 +268,7 @@ var app = {
 			data.time = 'Nunca';
 		}
 		if(data.ultimomensaje!=null){
-			data.mensaje = (data.ultimomensaje).substr(0, 10) + "\u2026";
+			data.mensaje = (data.ultimomensaje).substr(0, 25) + "\u2026";
 		} else {
 			data.mensaje = '';
 		}
@@ -399,8 +399,10 @@ var app = {
 						tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i></a>");
 						var foto = new Image();
 						foto.src = cObj.foto;
-						foto.className = "img-circle img-responsive"
-						tDom.append(foto);
+						var imgCont = document.createElement("div")
+						imgCont.className = "foto-usuario";
+						imgCont.appendChild(foto);
+						tDom.append(imgCont);
 						tDom.append(cObj.nombre+" "+cObj.apellido);
 					}
 				}
