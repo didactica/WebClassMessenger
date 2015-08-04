@@ -148,7 +148,6 @@ h1 {
 	left:0px;
 	background:rgb(22,128,202);
 	color:#fff;
-	font-weight:bolder;
 	height:4em;
 	line-height:2.5em;
 	display:table-cell;
@@ -166,9 +165,79 @@ h1 {
 	position:fixed;
 	bottom:0px;
 	width:100%;
-	padding:10px 19px;
+	padding:10px;
 	left:0px;
 	background:#ffffff;
+	display:inline-block;
+}
+.writemessage #inp-message{
+	background: #efefef none repeat scroll 0 0;
+    border: medium none;
+	-webkit-border-radius:0.5em 0 0.5em 0.5em;
+	-moz-border-radius:0.5em 0 0.5em 0.5em;
+	border-radius:0.5em 0 0.5em 0.5em;
+    -webkit-box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    -moz-box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+	padding:1em;
+	height:3.5em;
+	width: calc(100% - 4.5em);
+	position:relative;
+	z-index:2;
+}
+.writemessage #inp-message:focus{
+	outline:0;
+}
+.chat-arrow-shadow{
+	border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #efefef;
+    height: 0;
+    position: absolute;
+    right: 4.3em;
+    top: 0.65em;
+    width: 0;
+	z-index:1;
+	-webkit-transform:rotate(135deg);
+	-moz-transform:rotate(135deg);
+	transform:rotate(135deg);
+	-webkit-box-shadow:4px -5px 5px rgba(0,0,0,0.12);
+	-moz-box-shadow:4px -5px 5px rgba(0,0,0,0.12);
+	box-shadow:4px -5px 5px rgba(0,0,0,0.12);
+}
+.chat-arrow{
+	border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 20px solid #efefef;
+    height: 0;
+    position: absolute;
+    right: 4em;
+    top: 0.65em;
+    width: 0;
+	z-index:3;
+}
+#btn-enviar{
+	-webkit-border-radius:50%;
+	-moz-border-radius:50%;
+	border-radius:50%;
+    -webkit-box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    -moz-box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    height: 3.5em;
+    width: 3.5em;
+	padding:0;
+	margin:0 auto;
+    font-size: 1em;
+	font-weight:bolder;
+    text-align: center;
+}
+#btn-enviar .fa{
+	font-size:1.4em;
+	margin-top:-0.2em;
+	margin-left:-0.2em;
+}
+#btn-enviar{
+	outline:0;
 }
 #chat-container{
 	margin:0!important;
@@ -262,8 +331,8 @@ ul#chat-window li.right:after{
 	text-transform:capitalize;
 	text-decoration:none;
 }
-.usuario:hover{
-	background:#ccc;
+.usuario:active{
+	background:rgba(100,100,100,0.2);
 }
 .usuario .foto-usuario{
 	background-image:url(../img/user.jpg);
@@ -337,7 +406,7 @@ ul#chat-window li.right:after{
 	padding-right:0px!important;
 }
 #titulo{
-	font-size:1.2em;
+	font-size:1.4em;
 }
 #titulo .foto-usuario{
 	background-image:url(../img/user.jpg);
@@ -348,12 +417,11 @@ ul#chat-window li.right:after{
 	-moz-border-radius:50%;
 	border-radius:50%;
 	float:left;
-	margin:0 0.5em;
+	margin:-0.05em 0.5em 0;
     position: relative;
 	overflow:hidden;
-	height:2.4em;
-	width:2.4em;
-	margin-top:-0.2em;
+	height:2em;
+	width:2em;
 }
 #titulo .foto-usuario img{
   position: absolute;
@@ -373,12 +441,55 @@ ul#chat-window li.right:after{
 #titulo a.pull-left:visited{
 	font-size:1em;
 	color:#fff;
+	margin-top:-0.2em;
 }
-#btn-menu{
+#btn-menu, #buscar-usuario{
 	font-size:1.2em;
 	margin-top:-0.1em;
 	color:#fff;
 }
-#btn-menu:active{
+.btn{
+	outline:0!important;
+}
+.btn:active{
 	background:rgba(100,100,100,0.4)
+}
+#btn-menu:active, #buscar-ususario:active{
+	background:rgba(100,100,100,0.4)
+}
+#search-group{
+	position:fixed;
+	top:0px;
+	width:100%;
+	padding:10px 0px 10px 10px;
+	left:0px;
+	background:rgb(255,255,255);
+	height:4em;
+	line-height:2.5em;
+	display:table-cell;
+	vertical-align:middle;
+	z-index:999;
+	border-bottom:1px solid #ddd;
+}
+#search-query{
+	border: medium none;
+    margin: 0 0 0 2em;
+    padding: 0;
+}
+#search-query:focus{
+	outline: 0;
+}
+#tabs-usuarios .nav.nav-tabs li.active{
+	border-bottom:3px solid #efefef;
+}
+#tabs-usuarios .nav.nav-tabs li{
+	border-bottom:3px solid rgb(22, 128, 202);
+	margin-bottom:-3px;
+	font-weight:bold;
+}
+#tabs-usuarios .nav.nav-tabs li a,
+#tabs-usuarios .nav.nav-tabs li:hover{
+	border-width:0px;
+	border-color:transparent;
+	outline:0;
 }

@@ -7,7 +7,7 @@ Contacto.prototype.createTable = function(sql){
 	"	nombre varchar(160), " + 
 	"	apellido varchar(160), " + 
 	"	foto text, " + 
-	"	secuencia integer " + 
+	"	grupo integer " + 
 	" )";
 	sql.transaction(
 		function(tx){
@@ -32,8 +32,8 @@ Contacto.prototype.insert = function(sql,data,callback){
 		this.nombre = data.nombre;
 		this.apellido = data.apellido;
 		this.foto = data.foto;
-		this.secuencia = data.secuencia;
-		var query = "INSERT OR REPLACE INTO contacto(idusuario,nombre,apellido,foto,secuencia) VALUES(?,?,?,?,?)";
+		this.grupo = data.grupo;
+		var query = "INSERT OR REPLACE INTO contacto(idusuario,nombre,apellido,foto,grupo) VALUES(?,?,?,?,?)";
 		var self = this;
 		sql.transaction(
 			function(tx){
@@ -55,7 +55,7 @@ Contacto.prototype.insert = function(sql,data,callback){
 	}
 }
 Contacto.prototype.select = function(sql,filter,callback){
-	var query = "SELECT c.* FROM contacto c";
+	var query = "SELECT c.*,(select count(1) from notificacion n where n.remitente=c.id and n.leido=0) as mensajes,(select max(fecha) from notificacion n where n.remitente=c.id or n.receptor=c.id) as ultimafecha,(select n.mensaje from notificacion n where n.receptor=c.id or remitente=c.id order by id desc limit 1) as ultimomensaje FROM contacto c";
 	if( filter!=null ){
 		query += filter;
 	}

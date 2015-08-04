@@ -6,7 +6,9 @@ var receptor;
 var sql;
 var secuencia;
 var notificacion = new Notificacion();
-
+var buscar = false;
+var filtroUsuario = null;
+var grupo = false;
 
 document.addEventListener("backbutton",backButton, false);
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
@@ -35,7 +37,16 @@ var app = {
     onDeviceReady: function() {
 		user = window.localStorage.getItem("user");
 		if( user==null ){
-			$(".loader").hide();
+			// CREACION DE TABLAS
+			sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
+			var o = new Contacto();
+			o.createTable(sql);
+			var o = new Chat();
+			o.createTable(sql);
+			var o = new ChatContacto();
+			o.createTable(sql);
+			var o = new Notificacion();
+			o.createTable(sql);
 			$("#main-content").hide();
 			$(".hide-login").hide();
 			$("#login-container").show();
@@ -46,14 +57,14 @@ var app = {
 				if( userLogin.length==0 || passLogin.length==0 ){
 					navigator.notification.alert("Debe ingresar su usuario y clave",function(){ $("input[name=usuario]").focus(); },"Error");
 				} else {
-					$(".loader").show();
+					navigator.notification.activityStart("Identificando","Comprobando datos...");
 					$.ajax({
 						url:url+"/mobile/login.php",
 						data:{user:userLogin, pass:passLogin},
 						dataType: 'json',
 						type:'POST',
 						success: function(resp){
-							$(".loader").hide();
+							navigator.notification.activityStop();
 							if(resp.state==0){
 								user = resp.user;
 								window.localStorage.setItem("user",user);
@@ -65,7 +76,7 @@ var app = {
 							}
 						},
 						error: function(resp){
-							$(".loader").hide();
+							navigator.notification.activityStop();
 							navigator.notification.alert("No se puede procesar su solicitud en estos momentos, por favor intentelo nuevamente más adelante.",function(){},"Error");
 							console.log(JSON.stringify(resp));
 						}
@@ -80,7 +91,6 @@ var app = {
 		// BDD
 		sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
 		secuencia = window.localStorage.getItem("secuencia")
-		app.populateUsers();
 		$("#login-container").hide();
 		$(".hide-login").show();
 		$("#main-content").show();
@@ -110,15 +120,58 @@ var app = {
 		});
 		app.setTitle();
 		app.receivedEvent('deviceready');
-		$(".loader").hide();
 		if( receptor==null ){
+			filtroUsuario = null;
+			$("#tabs-usuarios ul li").off("click");
+			$("#tabs-usuarios ul li").on("click",function(e){
+				e.preventDefault();
+				var action = ($($(this).find('a')).attr("href")).substr(1);
+				switch(action){
+					case 'usuarios':
+						grupo = false;
+						break;
+					case 'grupos':
+						grupo = true;
+						break;
+				}
+				app.initializeUser();
+			});
 			$("#usuarios").show();
 			$("#chat").hide();
+			$("#buscar-usuario").show();
+			$("#buscar-usuario").off("click");
+			$("#buscar-usuario").on("click",function(){
+				buscar = true;
+				$("#tabs-usuarios").hide();
+				$(".heading").hide();
+				$("#search-group").show();
+				$("#lista-usuarios").css({marginTop:'0px'});
+				$("#search-query").focus();
+				$("#search-query").on("keyup",function(e){
+					if( e.keyCode==13 ){
+						var query = $(this).val();
+						filtroUsuario = null;
+						if(query.length>0){
+							filtroUsuario = " where lower(nombre) like '%"+query+"%' or lower(apellido) like '%"+query+"%'";
+						}
+						app.populateUsers();
+					}
+				});
+			});
+			$("#tabs-usuarios ul.nav.nav-tabs li").removeClass("active");
+			if( grupo ){
+				navigator.notification.activityStart("Cargando", "Cargando grupos");
+				$("#tabs-usuarios ul.nav.nav-tabs li a[href='#grupos']").parents('li').addClass("active");
+			} else {
+				navigator.notification.activityStart("Cargando", "Cargando lista de usuarios");
+				$("#tabs-usuarios ul.nav.nav-tabs li a[href='#usuarios']").parents('li').addClass("active");
+			}
 			app.populateUsers();
 		} else {
-			$(".loader").show();
+			navigator.notification.activityStart("Cargando", "Cargando mensajes");
 			$("#usuarios").hide();
 			$("#chat").show();
+			$("#buscar-usuario").hide();
 			app.populateMessages();
 			$("#inp-message").on("focus",function(){
 				$("*").scrollTop($("#messages").height());
@@ -126,9 +179,9 @@ var app = {
 			});
 			$("#btn-enviar").off("click");
 			$("#btn-enviar").on("click",function(e){
-				$(".loader").show();
 				var message = $("#inp-message").val();
 				if( message.length>0 || message!='' ){
+					navigator.notification.activityStart("Enviando","Enviando mensaje...");
 					var dt = new Date();
 					var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
 					var postData = {
@@ -143,14 +196,14 @@ var app = {
 						type:'POST',
 						dataType:'json',
 						success:function(resp){
-							$(".loader").hide();
+							navigator.notification.activityStop();
 							$("#inp-message").val("");
 							resp.data.class = "fa fa-ellipsis-h";
 							app.addMessage(resp.data);
 						},
 						error: function(){
+							navigator.notification.activityStop();
 							navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
-							$(".loader").hide();
 						}
 					});
 				}
@@ -184,7 +237,6 @@ var app = {
 					data : data,
 					type: 'POST',
 					success : function(resp){
-						$(".loader").hide();
 					}, 
 					error : function(resp,error){
 						console.log(JSON.stringify(resp));
@@ -234,7 +286,6 @@ var app = {
 						}
 					},
 					error : function(resp){
-						$(".loader").hide();
 					},
 				});
 			}
@@ -278,69 +329,64 @@ var app = {
 		$("#lista-usuarios").append(result);
 	},
 	populateMessages: function(){
-		app.downloadMessages();
-		app.readMessages();
-		app.setTitle();
-		notificacion.select(sql,receptor,function(mensajes){
-			$("ul#chat-window").html("");
-			for( var id in mensajes ){
-				var mes = mensajes[id];
-				var data = {
-					id : mes.id,
-					user : mes.remitente,
-					time : mes.fecha,
-					message : mes.mensaje,
-					class : (mes.leido?'fa fa-check':'fa fa-ellipsis-h')
-				};
-				app.addMessage(data);
-			}
-			$(".loader").hide();
+		if( buscar ){
+			buscar = false;
+			$("#tabs-usuarios").show();
+			$(".heading").show();
+			$("#search-group").hide();
+			$("#lista-usuarios").css({marginTop:'3em'});
+		}
+		$("#search-query").val("");
+		filtroUsuario = null;
+		app.downloadMessages(function(){
+			app.readMessages();
+			app.setTitle();
+			notificacion.select(sql,receptor,user,function(mensajes){
+				$("ul#chat-window").html("");
+				for( var id in mensajes ){
+					var mes = mensajes[id];
+					var data = {
+						id : mes.id,
+						user : mes.remitente,
+						time : mes.fecha,
+						message : mes.mensaje,
+						class : (mes.leido?'fa fa-check':'fa fa-ellipsis-h')
+					};
+					app.addMessage(data);
+				}
+				navigator.notification.activityStop();
+			});
 		});
 	},
 	populateUsers: function(){
-		if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
-			var data = {
-				user:user
-			};
-			$.ajax({
-				url:url+"/gcm/list-users.php",
-				data:data,
-				dataType:'json',
-				type:'POST',
-				success:function(resp){
-					for( var id in resp.usuarios ){
-						var c = new Contacto();
-						c.insert(sql,resp.usuarios[id]);
-					}
-				},
-				error:function(resp){
-					console.log(JSON.stringify(resp));
-				}
-			});
-		}
-		var c = new Contacto();
-		c.select(sql,null,function(contactos){
-			$("#lista-usuarios").html("");
-			for( var id in contactos ){
-				app.addUser(contactos[id]);
+		app.downloadUsers(function(){
+			if( filtroUsuario==null ){
+				filtroUsuario = " where ";
 			}
-			$(".usuario").off("click");
-			$(".usuario").on("click",function(e){
-				$(".loader").show();
-				$("#chat-window").html("");
-				e.preventDefault();
-				receptor = $(this).attr("data-rel");
-				app.initializeUser();
-				$(".loader").hide();
+			filtroUsuario += " grupo='"+(grupo?"1":"0")+"'";
+			var c = new Contacto();
+			c.select(sql,filtroUsuario,function(contactos){
+				$("#lista-usuarios").html("");
+				for( var id in contactos ){
+					app.addUser(contactos[id]);
+				}
+				navigator.notification.activityStop();
+				$(".usuario").off("click");
+				$(".usuario").on("click",function(e){
+					$("#chat-window").html("");
+					e.preventDefault();
+					receptor = $(this).attr("data-rel");
+					app.initializeUser();
+				});
 			});
 		});
 	},
-	downloadMessages: function(){
-		var params = {
-			user : user,
-			secuencia : secuencia
-		}
+	downloadMessages: function(callback){
 		if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
+			var params = {
+				user : user,
+				secuencia : secuencia
+			}
 			$.ajax({
 				url : url+'/gcm/getMessages.php',
 				data : params,
@@ -361,12 +407,71 @@ var app = {
 					} else {
 						console.log(result.errormessage);
 					}
+					if( callback ){
+						callback();
+					}
 				},
 				error: function(result){
-					$(".loader").hide();
 					console.log(JSON.stringify(result));
+					if( callback ){
+						callback();
+					}
 				}
 			});
+		} else {
+			if( callback ){
+				callback();
+			}
+		}
+	},
+	downloadUsers: function(callback){
+		if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
+			var tablas = ['contacto','chat_contacto','chat'];
+			for( var id in tablas ){
+				var tabla = tablas[id];
+				var data = {
+					user:user,
+					table:tabla,
+					secuencia:0
+				};
+				$.ajax({
+					url:url+"/gcm/list-users.php",
+					data:data,
+					dataType:'json',
+					type:'POST',
+					success:function(resp){
+						for( var id in resp.usuarios ){
+							switch(tabla){
+								case 'contacto':
+									var c = new Contacto();
+									c.insert(sql,resp.usuarios[id]);
+									break;
+								case 'chat':
+									var c = new Chat();
+									c.insert(sql,resp.usuarios[id]);
+									break;
+								case 'chat_contacto':
+									var c = new ChatContacto();
+									c.insert(sql,resp.usuarios[id]);
+									break;
+							}
+						}
+						if( callback ){
+							callback();
+						}
+					},
+					error:function(resp){
+						console.log(JSON.stringify(resp));
+						if( callback ){
+							callback();
+						}
+					}
+				});
+			}
+		} else {
+			if( callback ){
+				callback();
+			}
 		}
 	},
 	readMessages: function(){
@@ -391,7 +496,7 @@ var app = {
 		if( receptor!=null ){
 			var c = new Contacto();
 			var title = '';
-			var filter = " WHERE id='"+receptor+"'";// DEJAR SIEMPRE ESPACIO AL INICIO
+			var filter = " WHERE idusuario='"+receptor+"'";// DEJAR SIEMPRE ESPACIO AL INICIO
 			c.select(sql,filter,function(result){
 				for( var id in result ){
 					var cObj = result[id];
@@ -408,7 +513,7 @@ var app = {
 				}
 			});
 		} else {
-			tDom.html("WebClass");
+			tDom.html("&nbsp;WebClass");
 		}
 	}
 };
@@ -464,8 +569,17 @@ function timeSince(date) {
 	//*/
 }
 function backButton(){
+	if( buscar ){
+		buscar = false;
+		$("#tabs-usuarios").show();
+		$(".heading").show();
+		$("#search-group").hide();
+		$("#lista-usuarios").css({marginTop:'3em'});
+		return;
+	}
 	if( receptor!=null ){
 		receptor = null;
+		grupo = false;
 		app.initializeUser();
 		return;
 	}
