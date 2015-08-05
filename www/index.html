@@ -61,8 +61,9 @@
 							<div id="usuarios">
 								<div id="tabs-usuarios">
 									<ul class="nav nav-tabs hide-login collapse">
-										<li class="active"><a href="#usuarios">USUARIOS</a></li>
 										<li><a href="#grupos">GRUPOS</a></li>
+										<li><a href="#chats">CHATS</a></li>
+										<li class="active"><a href="#usuarios">USUARIOS</a></li>
 									</ul>
 								</div>
 								<div id="lista-usuarios"></div>
@@ -102,7 +103,7 @@
 			<li class="left clearfix panel">
 				<div class="chat-body clearfix">
 					{{#if titulo}}
-					<div class="sender">{{titulo}}</div>
+					<strong style="color:{{color}};">{{titulo}}</strong>
 					{{/if}}
 					<p class="message">
 					{{message}}
@@ -123,6 +124,20 @@
 				<div class="detalle">
 					<p>
 						<strong>{{nombre}}{{#if apellido}} {{apellido}}{{/if}}</strong>
+						<br/>
+						<span class="muted mensajepreview">{{tipo}}</span>
+					</p>
+				</div>
+			</a>
+		</script>
+		<script id="chat-div" type="text/html">
+			<a href="#" data-rel="{{id}}" class="usuario clearfix">
+				<div class="foto-usuario">
+					<img src="{{display_image}}" alt="usuario">
+				</div>
+				<div class="detalle">
+					<p>
+						<strong class="display-name">{{display_name}}</strong>
 						<small class="muted pull-right">{{time}}</small>
 						<br/>
 						<span class="muted mensajepreview">{{mensaje}}</span>{{#if mensajes}}<small class="pull-right badge">{{mensajes}}</small>{{/if}}

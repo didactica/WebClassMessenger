@@ -1,8 +1,8 @@
 var Notificacion = function(){};
 
 Notificacion.prototype.createTable = function(sql){
-	var query = " create table mensaje_chat(" + 
-	"	id bigint primary key not null autoincrement," + 
+	var query = " create table if not exists mensaje_chat(" + 
+	"	id integer primary key AUTOINCREMENT," + 
 	"	message_id varchar(160)," + 
 	"	remitente int(10) references usuario(id) on delete cascade," + 
 	"	mensaje text," + 
@@ -62,7 +62,7 @@ Notificacion.prototype.insert = function(sql,data,callback){
 	}
 }
 Notificacion.prototype.readMessages = function(sql,remitente,chat){
-	var query = "UPDATE mensaje_chat SET leido='1' WHERE chat='"+chat+"' AND remitente='"+remitente+"' and leido='0'";
+	var query = "UPDATE mensaje_chat SET leido='1' WHERE chat='"+chat+"' AND remitente!='"+remitente+"' and leido='0'";
 	sql.transaction(
 		function(tx){
 			tx.executeSql(query);
@@ -70,10 +70,7 @@ Notificacion.prototype.readMessages = function(sql,remitente,chat){
 	);
 }
 Notificacion.prototype.select = function(sql,chat,callback){
-	if( grupo==null ){
-		grupo=false;
-	}
-	var query = "SELECT * FROM mensaje_chat WHERE chat='"+chat+"'";
+	var query = "select *,cct.nombre as titulo from mensaje_chat mjc left join chat_contacto cct on mjc.chat=cct.chat and mjc.remitente=cct.contacto WHERE mjc.chat='"+chat+"'";
 	sql.transaction(
 		function(tx){
 			tx.executeSql(

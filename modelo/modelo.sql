@@ -4,8 +4,8 @@ create table contacto(
 	nombre varchar(128) not null,
 	apellido varchar(128) default '',
 	foto text,
+	tipo varchar(128) default 'Usuario',
 	secuencia integer default 0
-
 );
 create table chat(
 	id integer primary key not null auto_increment,

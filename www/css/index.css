@@ -328,8 +328,10 @@ ul#chat-window li.right:after{
 .usuario, .usuario:visited, .usuario:hover{
 	padding:1em 1em 0 1em;
 	display:block;
-	text-transform:capitalize;
 	text-decoration:none;
+}
+strong.display-name{
+	text-transform:capitalize;
 }
 .usuario:active{
 	background:rgba(100,100,100,0.2);
@@ -381,15 +383,19 @@ ul#chat-window li.right:after{
 #tabs-usuarios .nav{
 	width:100%;
 	position:fixed;
+	z-index:1000;
 }
 #tabs-usuarios .nav li,
 #tabs-usuarios .nav li.active,
 #tabs-usuarios .nav li:visited{
-	width:50%;
+	width:33%;
 	text-align:center;
 	border:none;
 	background:rgb(22, 128, 202) none repeat scroll 0 0;
 	color:#fff!important;
+}
+#tabs-usuarios .nav li:last-child{
+	width:34%;
 }
 #tabs-usuarios .nav li a{
 	background:rgb(22, 128, 202) none repeat scroll 0 0;
@@ -492,4 +498,7 @@ ul#chat-window li.right:after{
 	border-width:0px;
 	border-color:transparent;
 	outline:0;
+}
+.detalle .badge{
+	background:#3c3;
 }

@@ -1,8 +1,10 @@
+var url = "http://didactica.pablogarin.cl";
+
 var ChatContacto = function(){};
 
 ChatContacto.prototype.createTable = function(sql){
-	var query = "create table chat_contacto(" + 
-	"	id integer primary key not null autoincrement," + 
+	var query = "create table if not exists chat_contacto(" + 
+	"	id integer primary key AUTOINCREMENT," + 
 	"	chat integer not null," + 
 	"	contacto integer not null," + 
 	"	silenciado integer default 0," + 
@@ -55,25 +57,63 @@ ChatContacto.prototype.insert = function(sql,data,callback){
 		);
 	}
 }
-/*
-ChatContacto.prototype.select = function(sql,chat,callback){
-	if( grupo==null ){
-		grupo=false;
-	}
-	var query = "SELECT * FROM chat_contacto WHERE chat='"+chat+"'";
+//*
+ChatContacto.prototype.select = function(sql,contacto,callback){
+	var user = window.localStorage.getItem("user");
+	var query = "SELECT *,ct.id as contactoId, c.id as chatId FROM contacto ct LEFT JOIN chat_contacto cct ON cct.contacto=ct.idusuario LEFT JOIN chat c ON c.id=cct.chat and c.grupo=0 WHERE ct.idusuario='"+contacto+"'";
 	sql.transaction(
 		function(tx){
 			tx.executeSql(
 				query,
 				[],
 				function(tx,result){
-					var chat_contactos = [];
-					for( var i=0; i<result.rows.length; i++ ){
-						var curObj = result.rows.item(i);
-						chat_contactos.push(curObj);
-					}
-					if(callback){
-						callback(chat_contactos);
+					var retval = 0;
+					if( result.rows!=null && result.rows.length>0 ){
+						var curObj = result.rows.item(0);
+						if( curObj.chatId==null ){
+							var data = {
+								nombre:curObj.nombre+" "+curObj.apellido,
+								foto:curObj.foto,
+								grupo:"0"
+							} 
+							var postParams = data;
+							postParams.usuarios = [contacto,user];
+							$.ajax({
+								url:url+"/gcm/new-chat.php",
+								data:postParams,
+								dataType:'json',
+								type:'POST',
+								success:function(resp){
+									if( typeof resp.id !== 'undefined' ){
+										var c = new Chat();
+										data.id = resp.id;
+										c.insert(sql,data,function(res){
+											retval = res.insertId;
+											if(callback){
+												callback(retval);
+											}
+										});
+										for( var id in res.chat_contacto ){
+											var curCC = res.chat_contacto[id];
+											var cc = new ChatContacto();
+											cc.insert(sql,curCC,function(){
+												console.log("inserted chat_contacto");
+											});
+										}
+									}
+								},
+								error:function(resp,error){
+									console.log(JSON.stringify(resp));
+									console.log(error);
+									navigator.notification.alert("No se pudo iniciar el nuevo chat. Por favor conectese a Internet e intentelo nuevamente",null,"Error");
+								}
+							});
+						} else {
+							retval = curObj.chatId;
+							if(callback){
+								callback(retval);
+							}
+						}
 					}
 				},
 				function(tx,error){

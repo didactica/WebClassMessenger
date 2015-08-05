@@ -7,6 +7,7 @@ Contacto.prototype.createTable = function(sql){
 	"	nombre varchar(160), " + 
 	"	apellido varchar(160), " + 
 	"	foto text, " + 
+	"	tipo varchar(128), " + 
 	"	secuencia integer " + 
 	" )";
 	sql.transaction(
@@ -32,14 +33,15 @@ Contacto.prototype.insert = function(sql,data,callback){
 		this.nombre = data.nombre;
 		this.apellido = data.apellido;
 		this.foto = data.foto;
+		this.tipo = data.tipo;
 		this.secuencia = data.secuencia;
-		var query = "INSERT OR REPLACE INTO contacto(idusuario,nombre,apellido,foto,secuencia) VALUES(?,?,?,?,?)";
+		var query = "INSERT OR REPLACE INTO contacto(idusuario,nombre,apellido,foto,tipo,secuencia) VALUES(?,?,?,?,?,?)";
 		var self = this;
 		sql.transaction(
 			function(tx){
 				tx.executeSql(
 					query,
-					[self.idusuario, self.nombre, self.apellido, self.foto, self.grupo],
+					[self.idusuario, self.nombre, self.apellido, self.foto, self.tipo, self.grupo],
 					function(tx,result){
 						if(callback){
 							callback();
@@ -55,11 +57,13 @@ Contacto.prototype.insert = function(sql,data,callback){
 	}
 }
 Contacto.prototype.select = function(sql,filter,callback){
+	var user = window.localStorage.getItem("user");
 	var query = "SELECT c.* FROM contacto c";
 	if( filter!=null ){
-		query += filter;
+		query += filter+" and idusuario!='"+user+"'";
+	} else {
+		query += " WHERE idusuario!='"+user+"'";
 	}
-	console.log(query);
 	sql.transaction(
 		function(tx){
 			tx.executeSql(
