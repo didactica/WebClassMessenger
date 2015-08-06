@@ -355,17 +355,21 @@ strong.display-name{
 	float:left;
 	-webkit-border-radius:50%;
 	-moz-border-radius:50%;
-	-ms-border-radius:50%;
-	-o-border-radius:50%;
 	border-radius:50%;
+    position: relative;
 	overflow:hidden;
 	height:4em;
 	width:4em;
 }
 .usuario .foto-usuario img{
-	display:inline;
-	height:100%;
-	margin:0 auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 100%;
+  width: auto;
+  -webkit-transform: translate(-50%,-50%);
+      -ms-transform: translate(-50%,-50%);
+          transform: translate(-50%,-50%);
 }
 .usuario .detalle{
 	color:#000;
@@ -397,9 +401,9 @@ strong.display-name{
 #tabs-usuarios .nav li:visited{
 	width:33%;
 	text-align:center;
+	border:none;
 	background:rgb(22, 128, 202) none repeat scroll 0 0;
 	color:#fff!important;
-	white-space: nowrap;
 }
 #tabs-usuarios .nav li:last-child{
 	width:34%;
@@ -426,21 +430,25 @@ strong.display-name{
 	background-size:cover;
 	background-repeat: no-repeat;
     background-position: center center;
-	float:left;
 	-webkit-border-radius:50%;
 	-moz-border-radius:50%;
-	-ms-border-radius:50%;
-	-o-border-radius:50%;
 	border-radius:50%;
+	float:left;
+	margin:-0.05em 0.5em 0;
+    position: relative;
 	overflow:hidden;
 	height:2em;
 	width:2em;
-	margin:-0.05em 0.5em 0;
 }
 #titulo .foto-usuario img{
-	display:inline;
-	height:100%;
-	margin:0 auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 100%;
+  width: auto;
+  -webkit-transform: translate(-50%,-50%);
+      -ms-transform: translate(-50%,-50%);
+          transform: translate(-50%,-50%);
 }
 #titulo i.fa{
 	font-weight:lighter!important;
@@ -489,7 +497,7 @@ strong.display-name{
 	outline: 0;
 }
 #tabs-usuarios .nav.nav-tabs li.active{
-	border-bottom:3px solid #efefef!important;
+	border-bottom:3px solid #efefef;
 }
 #tabs-usuarios .nav.nav-tabs li{
 	border-bottom:3px solid rgb(22, 128, 202);

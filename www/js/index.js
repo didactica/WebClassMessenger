@@ -35,6 +35,7 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
+		document.addEventListener("resume", app.resumeApp, false);
 		user = window.localStorage.getItem("user");
 		if( user==null ){
 			// CREACION DE TABLAS
@@ -124,6 +125,7 @@ var app = {
 		app.setTitle();
 		app.receivedEvent('deviceready');
 		if( receptor==null ){
+			app.getNewMessages();
 			$("#lista-usuarios").html("");
 			$("#tabs-usuarios ul.nav.nav-tabs li").removeClass("active");
 			switch(tab){
@@ -164,7 +166,20 @@ var app = {
 						var query = $(this).val();
 						filtroUsuario = null;
 						if(query.length>0){
-							filtroUsuario = " where lower(nombre) like '%"+query+"%' or lower(apellido) like '%"+query+"%'";
+							switch(tab){
+								case 'chats':
+									navigator.notification.activityStart("Buscando", "Buscando chat");
+									filtroUsuario = " where lower(c.nombre) like '%"+query+"%'";
+									break;
+								case 'usuarios':
+									navigator.notification.activityStart("Buscando", "Buscando contacto");
+									filtroUsuario = " where lower(nombre) like '%"+query+"%' or lower(apellido) like '%"+query+"%'";
+									break;
+								case 'grupos':
+									navigator.notification.activityStart("Buscando", "Buscando grupo");
+									filtroUsuario = " where lower(chat.nombre) like '%"+query+"%'";
+									break;
+							}
 						}
 						app.populateUsers();
 					}
@@ -243,7 +258,7 @@ var app = {
 					data : data,
 					type: 'POST',
 					success : function(resp){
-						console.log(resp);
+						//console.log(resp);
 					}, 
 					error : function(resp,error){
 						console.log(JSON.stringify(resp));
@@ -253,12 +268,14 @@ var app = {
 			break;
 		case 'message':
 			if( e.payload.read=='true' || e.payload.read ){
-				console.log("receptor:"+receptor+"; e.payload.chat:"+e.payload.chat);
 				if( e.payload.chat==receptor ){
 					$(".fa.fa-ellipsis-h").removeClass("fa-ellipsis-h").addClass("fa-check");
 				}
-				var n = new Notificacion();
-				n.readMessages(sql,user,e.payload.chat);
+				console.log(typeof e.payload.group);
+				if( e.payload.group!="true" ){
+					var n = new Notificacion();
+					n.readMessages(sql,e.payload.user,e.payload.chat);
+				}
 			} else {
 				var params = {
 					user : user,
@@ -283,14 +300,23 @@ var app = {
 							}
 							window.localStorage.setItem("secuencia",secuencia);
 						}
-						if( e.coldstart ){
-							receptor = e.payload.chat;
-							app.initializeUser();
-						}
-						if(receptor!=null){
-							app.populateMessages();
+						if( e.foreground ){
+							if(receptor!=null){
+								app.populateMessages();
+							} else {
+								app.populateUsers();
+							}
 						} else {
-							app.populateUsers();
+							if( e.coldstart ){
+								receptor = e.payload.chat;
+								app.initializeUser();
+							} else {
+								if(receptor!=null){
+									app.populateMessages();
+								} else {
+									app.populateUsers();
+								}
+							}
 						}
 					},
 					error : function(resp){
@@ -307,7 +333,6 @@ var app = {
 		}
 	},
 	addMessage: function(data){
-		console.log(data);
 		if( data.user!=user ){
 			var source = $("#incoming-chat").html();
 		} else {
@@ -327,11 +352,16 @@ var app = {
 		} else {
 			data.time = 'Nunca';
 		}
-		if(data.ultimomensaje!=null){
-			if( (data.ultimomensaje).length>25 ){
-				data.mensaje = (data.ultimomensaje).substr(0, 25) + "\u2026";
+		var mensaje = data.ultimomensaje;
+		if( typeof mensaje!== 'undefined' && mensaje!=null ){
+			if( typeof data.lastusuario === 'undefined' || data.lastusuario==null ){
 			} else {
-				data.mensaje = data.ultimomensaje;
+				mensaje = data.lastusuario+": "+mensaje;
+			}
+			if( (mensaje).length>25 ){
+				data.mensaje = (mensaje).substr(0, 25) + "\u2026";
+			} else {
+				data.mensaje = mensaje;
 			}
 		} else {
 			data.mensaje = '';
@@ -364,7 +394,6 @@ var app = {
 				$("ul#chat-window").html("");
 				for( var id in mensajes ){
 					var mes = mensajes[id];
-					console.log(JSON.stringify(mes));
 					var data = {
 						id : mes.id,
 						user : mes.remitente,
@@ -381,6 +410,45 @@ var app = {
 				navigator.notification.activityStop();
 			});
 		});
+	},
+	getNewMessages: function(){
+		sql.transaction(
+			function(tx){
+				var query = "select (select count(1) from chat c left join mensaje_chat mjc on mjc.chat=c.id and c.grupo=1 where mjc.leido=0 and mjc.remitente!='"+user+"') as grupo, (select count(1) from chat c left join mensaje_chat mjc on mjc.chat=c.id and c.grupo=0 where mjc.leido=0 and mjc.remitente!='"+user+"') as chat;";
+				tx.executeSql(
+					query,
+					[],
+					function(tx,result){
+						if( result.rows!=null && result.rows.length>0 ){
+							var res = result.rows.item(0);
+							var newChat = res.chat;
+							var newGrupo = res.grupo;
+							if( !isNaN(newChat) ){
+								if( parseInt(newChat)>0 ){
+									$("#chat-new").html(newChat);
+									$("#chat-new").show();
+								} else {
+									$("#chat-new").html("");
+									$("#chat-new").hide();
+								}
+							}
+							if( !isNaN(newGrupo) ){
+								if( parseInt(newGrupo)>0 ){
+									$("#grupo-new").html(newGrupo);
+									$("#grupo-new").show();
+								} else {
+									$("#grupo-new").html("");
+									$("#grupo-new").hide();
+								}
+							}
+						}
+					},
+					function(tx,error){
+						console.log(JSON.stringify(error));
+					}
+				);
+			}
+		);
 	},
 	populateUsers: function(){
 		app.downloadUsers(function(){
@@ -402,6 +470,8 @@ var app = {
 							$("#chat-window").html("");
 							e.preventDefault();
 							receptor = $(this).attr("data-rel");
+							var mjc = new Notificacion();
+							mjc.readMessages(sql,user,receptor);
 							app.initializeUser();
 						});
 					});
@@ -421,7 +491,6 @@ var app = {
 							var contacto = $(this).attr("data-rel");
 							var cct = new ChatContacto();
 							cct.select(sql,contacto,function(chat){
-								console.log(JSON.stringify(chat));
 								receptor = chat;
 								app.initializeUser();
 							});
@@ -450,6 +519,7 @@ var app = {
 					});
 					break;
 			}
+			app.getNewMessages();
 		});
 	},
 	downloadMessages: function(callback){
@@ -475,8 +545,10 @@ var app = {
 							});
 						}
 						window.localStorage.setItem("secuencia",secuencia);
-					} else {
+					} else if( typeof result.errormessage !== 'undefined' ) {
 						console.log(result.errormessage);
+					} else {
+						console.log(result);
 					}
 					if( callback ){
 						callback();
@@ -628,6 +700,15 @@ var app = {
 		} else {
 			tDom.html("&nbsp;WebClass");
 		}
+	},
+	resumeApp: function(){
+		app.downloadMessages(function(){
+			if( receptor!=null ){
+				app.populateMessages();
+			} else {
+				app.populateUsers();
+			}
+		});
 	}
 };
 
@@ -701,10 +782,13 @@ function backButton(){
 function textToColor(text){
 	if( typeof text === 'string' ){
 		var color = '';
-		for( var i=0; i<text.length; i++ ){
-			color += text.charCodeAt(i);
+		var i = 0;
+		while( i*3<text.length ){
+			color += text.charCodeAt(i*3);
+			i++;
 		}
 		color = Math.floor(color*16777215).toString(16);
+		color = color.replace(/[0-5]/g,'');
 		color = color.substr(0,6)
 		return "#"+color;
 	}

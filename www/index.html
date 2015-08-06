@@ -5,7 +5,8 @@
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <!-- <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" /> -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <link rel="stylesheet" href="css/font-awesome.min.css" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
@@ -13,9 +14,13 @@
     </head>
     <body>
 		<div class="container-fluid">
+			<!-- row -->
 			<div class="row">
+				<!-- col-md-12 -->
 				<div class="col-md-12 full-width">
+					<!-- chat-container  -->
 					<div id="chat-container">
+						<!-- search-group -->
 						<div id="search-group">
 							<a href='#' onclick='backButton(); return false;' class='pull-left'>
 								<i class='fa fa-angle-left fa-2x'></i>
@@ -24,14 +29,15 @@
 								<input type="text" name="search" id="search-query" placeholder="Buscar..."/>
 							</div>
 						</div>
+						<!-- search-group -->
+						<!-- heading -->
 						<div class="heading">
 							<span id="titulo">&nbsp;WebClass</span>
 							<div class="btn-group pull-right">
 								<button id="btn-menu" type="button" class="btn btn-link dropdown-toggle hide-login collapse" data-toggle="dropdown">
 									<span class="glyphicon glyphicon-option-vertical" aria-hidden="true"></span>
-									<!--<i class="fa fa-ellipsis-v fa-inverse"></i>-->
 								</button>
-								<ul class="dropdown-menu slidedown">
+								<ul id="main-menu" class="dropdown-menu slidedown">
 									<li><a href="#" id="btn-logout">Cerrar Sesi&oacute;n</a></li>
 								</ul>
 							</div>
@@ -39,6 +45,8 @@
 								<span class="glyphicon glyphicon-search" aria-hidden="true" style="color:#fff"></span>
 							</button>
 						</div>
+						<!-- heading -->
+						<!-- login-container -->
 						<div id="login-container" class="collapse">
 							<form id="login-form">
 								<h3 class="content-header">Login</h3>
@@ -57,12 +65,14 @@
 								</center>
 							</form>
 						</div>
+						<!-- login-container -->
+						<!-- main-content -->
 						<div id="main-content" class="hide-login collapse">
 							<div id="usuarios">
 								<div id="tabs-usuarios">
 									<ul class="nav nav-tabs hide-login collapse">
-										<li><a href="#grupos">GRUPOS</a></li>
-										<li><a href="#chats">CHATS</a></li>
+										<li><a href="#grupos">GRUPOS <span id="grupo-new" class="badge collapse">1</span></a></li>
+										<li><a href="#chats">CHATS <span id="chat-new" class="badge collapse">1</span></a></li>
 										<li class="active"><a href="#usuarios">USUARIOS</a></li>
 									</ul>
 								</div>
@@ -74,16 +84,22 @@
 									</ul>
 								</div>
 								<div class="writemessage">
-									<input id="inp-message" type="text" name="message" class="pull-left" placeholder="Escribe aquí" />
+									<div class="inputContainer">
+										<input id="inp-message" type="text" name="message" class="pull-left" placeholder="Escribe aquí" />
+									</div>
 									<div class="chat-arrow-shadow pull-left"></div>
 									<div class="chat-arrow pull-left"></div>
 									<button class="btn btn-info btn-lg pull-right" id="btn-enviar"><i class="fa fa-send-o"></i></button>
 								</div>
 							</div>
 						</div>
+						<!-- main-content -->
 					</div>
+					<!-- chat-container  -->
 				</div>
+				<!-- col-md-12 -->
 			</div>
+			<!-- row -->
 		</div>
 		<script id="outgoing-chat" type="text/html">
 			<li class="right clearfix panel">
@@ -103,7 +119,7 @@
 			<li class="left clearfix panel">
 				<div class="chat-body clearfix">
 					{{#if titulo}}
-					<strong style="color:{{color}};">{{titulo}}</strong>
+					<strong class="group-user" style="color:{{color}};">{{titulo}}</strong>
 					{{/if}}
 					<p class="message">
 					{{message}}

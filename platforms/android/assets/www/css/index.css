@@ -164,11 +164,18 @@ h1 {
 .writemessage{
 	position:fixed;
 	bottom:0px;
-	width:100%;
 	padding:10px;
+	width:100%;
 	left:0px;
 	background:#ffffff;
 	display:inline-block;
+}
+.writemessage .inputContainer{
+	float:left;
+	width:100%;
+	padding-right:4.7em;
+	-moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 .writemessage #inp-message{
 	background: #efefef none repeat scroll 0 0;
@@ -181,7 +188,8 @@ h1 {
     box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
 	padding:1em;
 	height:3.5em;
-	width: calc(100% - 4.5em);
+	width:100%;
+	/* width: calc(100% - 4.5em); */
 	position:relative;
 	z-index:2;
 }
@@ -230,6 +238,9 @@ h1 {
     font-size: 1em;
 	font-weight:bolder;
     text-align: center;
+	position:absolute;
+	right:0.6em;
+	bottom:0.6em;
 }
 #btn-enviar .fa{
 	font-size:1.4em;
@@ -344,21 +355,17 @@ strong.display-name{
 	float:left;
 	-webkit-border-radius:50%;
 	-moz-border-radius:50%;
+	-ms-border-radius:50%;
+	-o-border-radius:50%;
 	border-radius:50%;
-    position: relative;
 	overflow:hidden;
 	height:4em;
 	width:4em;
 }
 .usuario .foto-usuario img{
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  height: 100%;
-  width: auto;
-  -webkit-transform: translate(-50%,-50%);
-      -ms-transform: translate(-50%,-50%);
-          transform: translate(-50%,-50%);
+	display:inline;
+	height:100%;
+	margin:0 auto;
 }
 .usuario .detalle{
 	color:#000;
@@ -383,16 +390,16 @@ strong.display-name{
 #tabs-usuarios .nav{
 	width:100%;
 	position:fixed;
-	z-index:1000;
+	z-index:998;
 }
 #tabs-usuarios .nav li,
 #tabs-usuarios .nav li.active,
 #tabs-usuarios .nav li:visited{
 	width:33%;
 	text-align:center;
-	border:none;
 	background:rgb(22, 128, 202) none repeat scroll 0 0;
 	color:#fff!important;
+	white-space: nowrap;
 }
 #tabs-usuarios .nav li:last-child{
 	width:34%;
@@ -419,25 +426,21 @@ strong.display-name{
 	background-size:cover;
 	background-repeat: no-repeat;
     background-position: center center;
+	float:left;
 	-webkit-border-radius:50%;
 	-moz-border-radius:50%;
+	-ms-border-radius:50%;
+	-o-border-radius:50%;
 	border-radius:50%;
-	float:left;
-	margin:-0.05em 0.5em 0;
-    position: relative;
 	overflow:hidden;
 	height:2em;
 	width:2em;
+	margin:-0.05em 0.5em 0;
 }
 #titulo .foto-usuario img{
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  height: 100%;
-  width: auto;
-  -webkit-transform: translate(-50%,-50%);
-      -ms-transform: translate(-50%,-50%);
-          transform: translate(-50%,-50%);
+	display:inline;
+	height:100%;
+	margin:0 auto;
 }
 #titulo i.fa{
 	font-weight:lighter!important;
@@ -486,7 +489,7 @@ strong.display-name{
 	outline: 0;
 }
 #tabs-usuarios .nav.nav-tabs li.active{
-	border-bottom:3px solid #efefef;
+	border-bottom:3px solid #efefef!important;
 }
 #tabs-usuarios .nav.nav-tabs li{
 	border-bottom:3px solid rgb(22, 128, 202);
@@ -501,4 +504,7 @@ strong.display-name{
 }
 .detalle .badge{
 	background:#3c3;
+}
+.group-user{
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
