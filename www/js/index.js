@@ -832,15 +832,16 @@ var app = {
 			console.log(nh);
 			if( nh>52 ){
 				$(".banner-usuario").show();
+				$("#ficha-usuario .heading").hide();
 				$(".banner-usuario").css('background-position','0px '+-distanceY/2+'px');
 				$(".banner-usuario").height(nh);
 				var textHeight = ((nh*300)/bannerUsuarioHeight.bg);
-				$(".banner-usuario").css('opacity',textHeight/300);
-				$("#ficha-usuario .heading").css('opacity',100-textHeight/300);
+				$(".banner-usuario.bg").css('opacity',textHeight/300);
 				if(textHeight>100){
 					$(".banner-usuario span").css('font-size',textHeight+'%');
 				}
 			} else {
+				$("#ficha-usuario .heading").show();
 				$(".banner-usuario").hide();
 			}
 		});
