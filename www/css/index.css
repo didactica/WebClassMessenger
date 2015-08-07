@@ -508,3 +508,27 @@ strong.display-name{
 .group-user{
 	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
+#ficha-usuario .banner-usuario{
+	background-color:rgb(22,128,202);
+	position:fixed;
+	width:100%;
+	color:#ccc;
+	height:35vh;
+	overflow:hidden;
+	z-index:1001;
+}
+#ficha-usuario .banner-usuario .nombre-usuario{
+	position:absolute;
+	bottom:0px;
+	left:0px;
+	font-size:3em;
+	color:#fff;
+	width:90%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding:10px 10px;
+}
+#ficha-usuario .detalles-ficha-usuario{
+	padding-top:35vh;
+}

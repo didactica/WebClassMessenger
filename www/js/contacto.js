@@ -64,7 +64,6 @@ Contacto.prototype.select = function(sql,filter,callback){
 	} else {
 		query += " WHERE idusuario!='"+user+"'";
 	}
-	console.log(query);
 	sql.transaction(
 		function(tx){
 			tx.executeSql(

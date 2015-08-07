@@ -42,15 +42,30 @@ Notificacion.prototype.insert = function(sql,data,callback){
 		this.secuencia = data.secuencia;
 		var query = "INSERT OR REPLACE INTO mensaje_chat(id,message_id,remitente,mensaje,fecha,enviado,leido,chat,secuencia) VALUES(?,?,?,?,?,?,?,?,?)";
 		var self = this;
+		// WE NEED TO KNOW IF THE MESSAGE ALREADY EXISTS SO WE DONT OVERRIDE ITS "READ" PROPERTY, WHICH HAS TO BE HANDLED LOCALLY AND NOT FROM THE SERVER.
 		sql.transaction(
 			function(tx){
 				tx.executeSql(
-					query,
-					[self.id, self.message_id, self.remitente, self.mensaje, self.fecha, self.enviado, self.leido, self.chat, self.secuencia],
+					"select * from mensaje_chat where id=?",
+					[self.id],
 					function(tx,result){
-						if(callback){
-							callback();
+						if(result.rows.length>0){
+							var tmpobj = result.rows.item(0);
+							self.leido = tmpobj.leido;
 						}
+						tx.executeSql(
+							query,
+							[self.id, self.message_id, self.remitente, self.mensaje, self.fecha, self.enviado, self.leido, self.chat, self.secuencia],
+							function(tx,result){
+								if(callback){
+									callback();
+								}
+							},
+							function(tx,error){
+								console.log("ATENCION!!!!");
+								console.log(JSON.stringify(error));
+							}
+						);
 					},
 					function(tx,error){
 						console.log("ATENCION!!!!");
@@ -61,8 +76,14 @@ Notificacion.prototype.insert = function(sql,data,callback){
 		);
 	}
 }
-Notificacion.prototype.readMessages = function(sql,remitente,chat){
-	var query = "UPDATE mensaje_chat SET leido='1' WHERE chat='"+chat+"' AND remitente!='"+remitente+"' and leido='0'";
+Notificacion.prototype.readMessages = function(sql,chat,push){
+	var user = window.localStorage.getItem("user");
+	var query = "UPDATE mensaje_chat SET leido='1' WHERE chat='"+chat+"'";
+	if( push ){
+		query += " AND remitente='"+user+"' and leido='0'";
+	} else {
+		query += " AND remitente!='"+user+"' and leido='0'";
+	}
 	sql.transaction(
 		function(tx){
 			tx.executeSql(query);

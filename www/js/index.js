@@ -2,13 +2,15 @@
 // variables referenciales
 var url = "http://didactica.pablogarin.cl";
 var user;
-var receptor;
+var chat;
 var sql;
 var secuencia;
 var notificacion = new Notificacion();
 var buscar = false;
 var filtroUsuario = null;
 var tab = "chats";
+var silenciado = false;
+var bannerUsuarioHeight = {};
 
 document.addEventListener("backbutton",backButton, false);
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
@@ -91,6 +93,8 @@ var app = {
 	initializeUser: function(){
 		// BDD
 		sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
+		// BUILD MENU
+		app.inflateMenu();
 		secuencia = window.localStorage.getItem("secuencia")
 		$("#login-container").hide();
 		$(".hide-login").show();
@@ -99,32 +103,9 @@ var app = {
 		contacto.createTable(sql);
 		notificacion.createTable(sql);
 		app.downloadMessages();
-		$("#btn-logout").off("click");
-		$("#btn-logout").on("click",function(e){
-			var pushNotification = window.plugins.pushNotification;
-			pushNotification.unregister(
-			function(){
-				app.setTitle();
-				sql.transaction(
-					function(tx){
-						console.log("DELETING TABLES");
-						tx.executeSql("delete from chat",null,null,function(tx,error){ console.log(JSON.stringify(error)); });
-						tx.executeSql("delete from chat_contacto",null,null,function(tx,error){ console.log(JSON.stringify(error)); });
-						tx.executeSql("delete from contacto",null,null,function(tx,error){ console.log(JSON.stringify(error)); });
-						tx.executeSql("delete from mensaje_chat",null,null,function(tx,error){ console.log(JSON.stringify(error)); });
-					}
-				);
-				window.localStorage.clear();
-				receptor = null;
-				user = null;
-				app.onDeviceReady();
-			}, function(){
-				navigator.notification.alert("No se pudo realizar la acción",null,"Error");
-			});
-		});
 		app.setTitle();
 		app.receivedEvent('deviceready');
-		if( receptor==null ){
+		if( chat==null ){
 			app.getNewMessages();
 			$("#lista-usuarios").html("");
 			$("#tabs-usuarios ul.nav.nav-tabs li").removeClass("active");
@@ -205,7 +186,7 @@ var app = {
 					var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
 					var postData = {
 						remitente:user,
-						chat:receptor,
+						chat:chat,
 						message:message,
 						fecha:fecha
 					};
@@ -268,14 +249,11 @@ var app = {
 			break;
 		case 'message':
 			if( e.payload.read=='true' || e.payload.read ){
-				if( e.payload.chat==receptor ){
+				if( e.payload.chat==chat ){
 					$(".fa.fa-ellipsis-h").removeClass("fa-ellipsis-h").addClass("fa-check");
 				}
-				console.log(typeof e.payload.group);
-				if( e.payload.group!="true" ){
-					var n = new Notificacion();
-					n.readMessages(sql,e.payload.user,e.payload.chat);
-				}
+				var n = new Notificacion();
+				n.readMessages(sql,e.payload.chat,true);
 			} else {
 				var params = {
 					user : user,
@@ -301,17 +279,17 @@ var app = {
 							window.localStorage.setItem("secuencia",secuencia);
 						}
 						if( e.foreground ){
-							if(receptor!=null){
+							if(chat!=null){
 								app.populateMessages();
 							} else {
 								app.populateUsers();
 							}
 						} else {
 							if( e.coldstart ){
-								receptor = e.payload.chat;
+								chat = e.payload.chat;
 								app.initializeUser();
 							} else {
-								if(receptor!=null){
+								if(chat!=null){
 									app.populateMessages();
 								} else {
 									app.populateUsers();
@@ -390,7 +368,7 @@ var app = {
 		app.downloadMessages(function(){
 			app.readMessages();
 			app.setTitle();
-			notificacion.select(sql,receptor,function(mensajes){
+			notificacion.select(sql,chat,function(mensajes){
 				$("ul#chat-window").html("");
 				for( var id in mensajes ){
 					var mes = mensajes[id];
@@ -469,9 +447,7 @@ var app = {
 						$(".usuario").on("click",function(e){
 							$("#chat-window").html("");
 							e.preventDefault();
-							receptor = $(this).attr("data-rel");
-							var mjc = new Notificacion();
-							mjc.readMessages(sql,user,receptor);
+							chat = $(this).attr("data-rel");
 							app.initializeUser();
 						});
 					});
@@ -490,8 +466,8 @@ var app = {
 							e.preventDefault();
 							var contacto = $(this).attr("data-rel");
 							var cct = new ChatContacto();
-							cct.select(sql,contacto,function(chat){
-								receptor = chat;
+							cct.select(sql,contacto,function(resChat){
+								chat = resChat;
 								app.initializeUser();
 							});
 						});
@@ -513,7 +489,7 @@ var app = {
 						$(".usuario").on("click",function(e){
 							$("#chat-window").html("");
 							e.preventDefault();
-							receptor = $(this).attr("data-rel");
+							chat = $(this).attr("data-rel");
 							app.initializeUser();
 						});
 					});
@@ -523,6 +499,9 @@ var app = {
 		});
 	},
 	downloadMessages: function(callback){
+		if( (typeof secuencia === 'undefined' ) || (secuencia==null) ){
+			secuencia = 0;
+		}
 		if( (typeof navigator.connection!='undefined') && (navigator.connection.type!=Connection.NONE) ){
 			var params = {
 				user : user,
@@ -635,10 +614,12 @@ var app = {
 			}
 		}
 	},
-	readMessages: function(){
+	readMessages: function(mine){
+		var n = new Notificacion();
+		n.readMessages(sql,chat,false);
 		var params = {
 			user: user,
-			chat:receptor
+			chat: chat
 		}
 		$.ajax({
 			url : url+"/gcm/read.php",
@@ -654,16 +635,17 @@ var app = {
 	},
 	setTitle: function(){
 		var tDom = $("#titulo");
-		if( receptor!=null ){
+		if( chat!=null ){
 			switch(tab){
 				case 'grupos':
 					var c = new Chat();
 					var title = '';
-					var filter = " WHERE chat.id='"+receptor+"'";// DEJAR SIEMPRE ESPACIO AL INICIO
+					var filter = " WHERE chat.id='"+chat+"'";// DEJAR SIEMPRE ESPACIO AL INICIO
 					c.select(sql,filter,true,function(result){
 						for( var id in result ){
 							var cObj = result[id];
 							if( typeof cObj !== 'undefined' ){
+								silenciado = cObj.silenciado==1;
 								tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i></a>");
 								var foto = new Image();
 								foto.src = cObj.foto;
@@ -679,11 +661,12 @@ var app = {
 				default:
 					var c = new Chat();
 					var title = '';
-					var filter = " WHERE c.id='"+receptor+"'";// DEJAR SIEMPRE ESPACIO AL INICIO
+					var filter = " WHERE c.id='"+chat+"'";// DEJAR SIEMPRE ESPACIO AL INICIO
 					c.select(sql,filter,false,function(result){
 						for( var id in result ){
 							var cObj = result[id];
 							if( typeof cObj !== 'undefined' ){
+								silenciado = cObj.silenciado==1;
 								tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i></a>");
 								var foto = new Image();
 								foto.src = cObj.foto;
@@ -703,10 +686,162 @@ var app = {
 	},
 	resumeApp: function(){
 		app.downloadMessages(function(){
-			if( receptor!=null ){
+			if( chat!=null ){
 				app.populateMessages();
 			} else {
 				app.populateUsers();
+			}
+		});
+	},
+	inflateMenu: function(){
+		if( chat==null ){
+			if( tab=='grupos' ){
+				var menu = [
+					{
+						id:'crear-grupo',
+						text:'Crear Nuevo Grupo'
+					}
+				]
+			} else {
+				var menu = [];
+			}
+			menu.push(
+				{
+					id:'btn-logout',
+					text:'Cerrar Sesión'
+				}
+			);
+		} else {
+			var menu = [
+				{
+					id:'ver-usuario',
+					text:'Ver Usuario'
+				}
+			];
+			if( silenciado ){
+				menu.push(
+					{
+						id:'silenciar-chat',
+						text:'Silenciar Chat'
+					}
+				);
+			} else {
+				menu.push(
+					{
+						id:'silenciar-chat',
+						text:'Cancelar Silencio'
+					}
+				);
+			}
+		}
+		var source = $("#menu-template").html();
+		var template = Handlebars.compile(source);
+		$("#main-menu").html("");
+		for( var id in menu ){
+			var menuItem = menu[id];
+			var result = template(menuItem);
+			$("#main-menu").append(result);
+		}
+		app.eventListeners();
+	},
+	eventListeners: function(){
+		$("#ver-usuario").off("click");
+		$("#ver-usuario").on("click",function(e){
+			//TODO: show user info
+		});
+		$("#silenciar-chat").off("click");
+		$("#silenciar-chat").on("click",function(e){
+			if( chat!=null ){
+				if(silenciado){
+					var msg = "¿Seguro desea cancelar silencio?";
+				} else {
+					var msg = "¿Seguro desea silenciar la conversación?";
+				}
+				navigator.notification.confirm(
+					msg,
+					function(buttonIndex){
+						if( buttonIndex==2 ){
+							var c = new ChatContacto();
+							c.silenciar(sql,chat,function(silenced){
+								if(silenced){
+									var params = {
+										chat:chat,
+										user:user,
+										state:(silenciado?'1':'0')
+									};
+									silenciado=!silenciado;
+									app.inflateMenu();
+									console.log(params);
+									$.ajax({
+										url:url+"/gcm/silence.php",
+										data:params,
+										dataType:'json',
+										success:function(r){
+											console.log(JSON.stringify(r));
+										}
+									});
+								}
+							});
+						}
+					},
+					"Silenciar Chat",
+					['No','Si']
+				);
+			}
+		});
+		$("#btn-logout").off("click");
+		$("#btn-logout").on("click",function(e){
+			var pushNotification = window.plugins.pushNotification;
+			pushNotification.unregister(
+			function(){
+				app.setTitle();
+				sql.transaction(
+					function(tx){
+						console.log("DELETING TABLES");
+						tx.executeSql("delete from chat",null,null,function(tx,error){ console.log(JSON.stringify(error)); });
+						tx.executeSql("delete from chat_contacto",null,null,function(tx,error){ console.log(JSON.stringify(error)); });
+						tx.executeSql("delete from contacto",null,null,function(tx,error){ console.log(JSON.stringify(error)); });
+						tx.executeSql("delete from mensaje_chat",null,null,function(tx,error){ console.log(JSON.stringify(error)); });
+					}
+				);
+				window.localStorage.clear();
+				chat = null;
+				user = null;
+				app.onDeviceReady();
+			}, function(){
+				navigator.notification.alert("No se pudo realizar la acción",null,"Error");
+			});
+		});
+	},
+	verFichaUsuario: function(data){
+		var source = $("#ficha-usuario-template").html();
+		var template = Handlebars.compile(source);
+		var view = template(data);
+		console.log(view);
+		$("#ficha-usuario").html("");
+		$("#ficha-usuario").append(view);
+		$(".heading, #chat, #usuarios, #search-group").hide();
+		$("#main-content, #ficha-usuario").show();
+		bannerUsuarioHeight.bg = $(".banner-usuario").height();
+		bannerUsuarioHeight.span = ($(".banner-usuario span").css('font-size')).replace('px','');
+		console.log(bannerUsuarioHeight);
+		window.addEventListener('scroll', function(e){
+			$("#ficha-usuario .heading").show();
+			var distanceY = window.pageYOffset || document.documentElement.scrollTop;
+			var nh = bannerUsuarioHeight.bg-distanceY;
+			console.log(nh);
+			if( nh>52 ){
+				$(".banner-usuario").show();
+				$(".banner-usuario").css('background-position','0px '+-distanceY/2+'px');
+				$(".banner-usuario").height(nh);
+				var textHeight = ((nh*300)/bannerUsuarioHeight.bg);
+				$(".banner-usuario").css('opacity',textHeight/300);
+				$("#ficha-usuario .heading").css('opacity',100-textHeight/300);
+				if(textHeight>100){
+					$(".banner-usuario span").css('font-size',textHeight+'%');
+				}
+			} else {
+				$(".banner-usuario").hide();
 			}
 		});
 	}
@@ -771,8 +906,8 @@ function backButton(){
 		$("#lista-usuarios").css({marginTop:'3em'});
 		return;
 	}
-	if( receptor!=null ){
-		receptor = null;
+	if( chat!=null ){
+		chat = null;
 		filtroUsuario = null;
 		app.initializeUser();
 		return;
