@@ -92,6 +92,8 @@
 									<button class="btn btn-info btn-lg pull-right" id="btn-enviar"><i class="fa fa-send-o"></i></button>
 								</div>
 							</div>
+							<div id="ficha-usuario" class="collapse">
+							</div>
 						</div>
 						<!-- main-content -->
 					</div>
@@ -163,6 +165,51 @@
 		</script>
 		<script id="menu-template" type="text/html">
 			<li><a href="#" id="{{id}}">{{text}}</a></li>
+		</script>
+		<script id="ficha-usuario-template" type="text/html">
+			<div id="back-ficha-usuario" onclick="backButton(); return false;">
+				<span><i class="fa fa-angle-left fa-2x"></i></span>
+			</div>
+			<div class="banner-usuario" style="background-color:rgb(22,128,202); background-size:100%;">
+				<span class="nombre-usuario">{{nombre}} {{apellido}}</span>
+			</div>
+			<div class="banner-usuario bg" style="background:url({{foto}}) no-repeat fixed; background-size:100%;">
+				<span class="nombre-usuario">{{nombre}} {{apellido}}</span>
+			</div>
+			<div class="detalles-ficha-usuario">
+				<div class="panel clearfix">
+					<div class="content">
+						<p style="padding:1em; text-align:center;">
+							<strong style="font-size:1.5em;">{{nombre}} {{apellido}}</strong><br/>
+							<span class="muted">{{tipo}}</span>
+						</p>
+					</div>
+				</div>
+				<div class="panel clearfix">
+					<h5>Grupos en com&uacute;n</h5>
+					<hr/>
+					<div class="content">
+					{{#if grupos}}
+						{{#each grupoArray}}
+						<div class="grupo">
+							<a href="#" class="usuario clearfix" onclick="backButton(); chat = {{id}}; tab = 'grupos'; app.initializeUser(); return false;">
+								<div class="foto-usuario">
+									<img src="{{display_image}}">
+								</div>
+								<div class="detalle">
+									<p>
+										<strong class="display-name">{{display_name}}</strong>
+									</p>
+								</div>
+							</a>
+						</div>
+						{{/each}}
+					{{else}}
+						<strong>No hay grupos</strong>
+					{{/if}}
+					</div>
+				</div>
+			</div>
 		</script>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/PushNotification.js"></script>

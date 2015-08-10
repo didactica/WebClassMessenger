@@ -88,6 +88,8 @@ Contacto.prototype.select = function(sql,filter,callback){
 					}
 				},
 				function(tx,error){
+					console.log("ATENCION!!!");
+					console.log(JSON.stringify(error));
 				}
 			);
 		}

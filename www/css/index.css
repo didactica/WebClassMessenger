@@ -520,15 +520,44 @@ strong.display-name{
 #ficha-usuario .banner-usuario .nombre-usuario{
 	position:absolute;
 	bottom:0px;
-	left:0px;
-	font-size:3em;
+	left:20px;
+	font-size:2.5em;
 	color:#fff;
 	width:90%;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	padding:10px 10px;
+	padding:19px 10px;
 }
 #ficha-usuario .detalles-ficha-usuario{
-	padding-top:35vh;
+	background:#efefef;
+	padding:0.5em;
+	padding-top:37vh;
+	min-height:100vh;
+}
+#ficha-usuario .detalles-ficha-usuario div.clearfix{
+	padding:0;
+	margin:0 0 1em 0;
+}
+#ficha-usuario .detalles-ficha-usuario div.clearfix h5{
+	padding:0.5em 0.5em 0 0.5em;
+	color:rgb(22,128,202);
+}
+#ficha-usuario .detalles-ficha-usuario div.clearfix hr{
+	width:100%;
+	margin:0;
+	padding:0;
+}
+#ficha-usuario .detalles-ficha-usuario div.clearfix .content{
+	padding:0 0.5em;
+}
+#back-ficha-usuario{
+	position:fixed;
+	top:13px;
+	left:0.3em;
+	z-index:1003;
+	color:#fff;
+}
+#main-menu{
+	padding:0.5em;
 }

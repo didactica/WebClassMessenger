@@ -167,7 +167,9 @@
 			<li><a href="#" id="{{id}}">{{text}}</a></li>
 		</script>
 		<script id="ficha-usuario-template" type="text/html">
-			<div class="heading">{{nombre}} {{apellido}}</div>
+			<div id="back-ficha-usuario" onclick="backButton(); return false;">
+				<span><i class="fa fa-angle-left fa-2x"></i></span>
+			</div>
 			<div class="banner-usuario" style="background-color:rgb(22,128,202); background-size:100%;">
 				<span class="nombre-usuario">{{nombre}} {{apellido}}</span>
 			</div>
@@ -175,10 +177,38 @@
 				<span class="nombre-usuario">{{nombre}} {{apellido}}</span>
 			</div>
 			<div class="detalles-ficha-usuario">
-				<p>
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br/>
-					Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
-				</p>
+				<div class="panel clearfix">
+					<div class="content">
+						<p style="padding:1em; text-align:center;">
+							<strong style="font-size:1.5em;">{{nombre}} {{apellido}}</strong><br/>
+							<span class="muted">{{tipo}}</span>
+						</p>
+					</div>
+				</div>
+				<div class="panel clearfix">
+					<h5>Grupos en com&uacute;n</h5>
+					<hr/>
+					<div class="content">
+					{{#if grupos}}
+						{{#each grupoArray}}
+						<div class="grupo">
+							<a href="#" class="usuario clearfix" onclick="backButton(); chat = {{id}}; tab = 'grupos'; app.initializeUser(); return false;">
+								<div class="foto-usuario">
+									<img src="{{display_image}}">
+								</div>
+								<div class="detalle">
+									<p>
+										<strong class="display-name">{{display_name}}</strong>
+									</p>
+								</div>
+							</a>
+						</div>
+						{{/each}}
+					{{else}}
+						<strong>No hay grupos</strong>
+					{{/if}}
+					</div>
+				</div>
 			</div>
 		</script>
         <script type="text/javascript" src="cordova.js"></script>

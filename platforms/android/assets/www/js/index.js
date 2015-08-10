@@ -8,8 +8,10 @@ var secuencia;
 var notificacion = new Notificacion();
 var buscar = false;
 var filtroUsuario = null;
+var alltabs = ['grupos','chats','usuarios'];
 var tab = "chats";
 var silenciado = false;
+var bannerUsuarioHeight = {};
 
 document.addEventListener("backbutton",backButton, false);
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
@@ -741,14 +743,25 @@ var app = {
 			var result = template(menuItem);
 			$("#main-menu").append(result);
 		}
+		app.eventListeners();
+	},
+	eventListeners: function(){
 		$("#ver-usuario").off("click");
 		$("#ver-usuario").on("click",function(e){
-			//TODO: show user info
+			//TODO: get user data and groups
+			var contacto = new Contacto();
+			contacto.select(
+				sql,
+				" WHERE idusuario in (select contacto from chat_contacto where contacto!='"+user+"' and chat='"+chat+"')",
+				function(data){
+					app.verFichaUsuario(data[0]);
+				}
+			);
 		});
 		$("#silenciar-chat").off("click");
 		$("#silenciar-chat").on("click",function(e){
 			if( chat!=null ){
-				if(silenciado){
+				if(!silenciado){
 					var msg = "¿Seguro desea cancelar silencio?";
 				} else {
 					var msg = "¿Seguro desea silenciar la conversación?";
@@ -808,6 +821,83 @@ var app = {
 				navigator.notification.alert("No se pudo realizar la acción",null,"Error");
 			});
 		});
+	},
+	verFichaUsuario: function(data){
+		sql.transaction(
+			function(tx){
+				var contacto = data.idusuario;
+				var query = "select id,foto as display_image, nombre as display_name from chat where grupo=1 and id in (select chat from chat_contacto where contacto=?)";
+				console.log(query);
+				tx.executeSql(
+					query,
+					[contacto],
+					function(tx,result){
+						if( (result.rows!=null) && (result.rows.length>0) ){
+							data.grupos = true;
+							data.grupoArray = [];
+							for( var i=0; i<result.rows.length; i++ ){
+								data.grupoArray.push(result.rows.item(i));
+							}
+						} else {
+							data.grupos = false;
+						}
+						var source = $("#ficha-usuario-template").html();
+						var template = Handlebars.compile(source);
+						var view = template(data);
+						$("#ficha-usuario").html("");
+						$("#ficha-usuario").append(view);
+						$(".heading, #chat, #usuarios, #search-group").hide();
+						$("#main-content, #ficha-usuario").show();
+						bannerUsuarioHeight.bg = $(".banner-usuario").height();
+						bannerUsuarioHeight.span = ($(".banner-usuario span").css('font-size')).replace('px','');
+						app.setUserBanner(true);
+						window.addEventListener('scroll', function(e){
+							app.setUserBanner(false);
+						});
+					},
+					function(tx,error){
+						console.log("ATENCION!!!");
+						console.log(JSON.stringify(error));
+					}
+				);
+			}
+		);
+	},
+	setUserBanner: function(initial){
+		var distanceY = window.pageYOffset || document.documentElement.scrollTop;
+		var nh = bannerUsuarioHeight.bg-distanceY;
+		if( initial ){
+			var tmp = 0;
+			if(nh<=56){
+				tmp=57;
+			} else {
+				tmp = nh;
+			}
+			$(".banner-usuario.bg").show();
+			$(".banner-usuario").css('background-position','0px '+-distanceY/2+'px');
+			$(".banner-usuario").height(tmp);
+			var textHeight = ((tmp*250)/bannerUsuarioHeight.bg);
+			$(".banner-usuario.bg").css('opacity',textHeight/250);
+			if(textHeight<=100){
+				textHeight = 100;
+			}
+			$(".banner-usuario span").css('font-size',textHeight+'%');
+		} else {
+			if( nh>56 ){
+				$(".banner-usuario.bg").show();
+				$(".banner-usuario").css('background-position','0px '+-distanceY/2+'px');
+				$(".banner-usuario").height(nh);
+				var textHeight = ((nh*250)/bannerUsuarioHeight.bg);
+				$(".banner-usuario.bg").css('opacity',textHeight/250);
+				if(textHeight>100){
+					$(".banner-usuario span").css('font-size',textHeight+'%');
+				}
+			} else {
+				$(".banner-usuario.bg").hide();
+				$(".banner-usuario").height(57);
+				$(".banner-usuario span").css('font-size','100%');
+			}
+		}
 	}
 };
 
@@ -862,6 +952,13 @@ function timeSince(date) {
 	//*/
 }
 function backButton(){
+	console.log("backButton");
+	console.log($("#ficha-usuario").css("display"));
+	if( $("#ficha-usuario").css("display")==='block' ){
+		$("#ficha-usuario").html("").hide();
+		$(".heading, #chat, #search-group").show();
+		return;
+	}
 	if( buscar ){
 		buscar = false;
 		$("#tabs-usuarios").show();
