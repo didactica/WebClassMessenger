@@ -63,7 +63,7 @@ var app = {
 				} else {
 					navigator.notification.activityStart("Identificando","Comprobando datos...");
 					$.ajax({
-						url:url+"/mobile/login.php",
+						url:url+"/gcm/login.php",
 						data:{user:userLogin, pass:passLogin, nocolegios:true},
 						dataType: 'json',
 						type:'POST',
@@ -457,8 +457,12 @@ var app = {
 					var c = new Contacto();
 					c.select(sql,filtroUsuario,function(contactos){
 						$("#lista-usuarios").html("");
-						for( var id in contactos ){
-							app.addUser(contactos[id]);
+						if( contactos.length>0 ){
+							for( var id in contactos ){
+								app.addUser(contactos[id]);
+							}
+						} else {
+							$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Contactos en tu lista</h2></div>");
 						}
 						navigator.notification.activityStop();
 						$(".usuario").off("click");
@@ -667,6 +671,7 @@ var app = {
 						for( var id in result ){
 							var cObj = result[id];
 							if( typeof cObj !== 'undefined' ){
+								console.log("Silenciado?? : "+cObj.silenciado);
 								silenciado = cObj.silenciado==1;
 								tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i></a>");
 								var foto = new Image();
@@ -675,7 +680,19 @@ var app = {
 								imgCont.className = "foto-usuario";
 								imgCont.appendChild(foto);
 								tDom.append(imgCont);
-								tDom.append(cObj.display_name);
+								tDom.append("<span class='ver-usuario'>"+cObj.display_name+"</span>");
+								$(".ver-usuario").off("click");
+								$(".ver-usuario").on("click",function(e){
+									//TODO: get user data and groups
+									var contacto = new Contacto();
+									contacto.select(
+										sql,
+										" WHERE idusuario in (select contacto from chat_contacto where contacto!='"+user+"' and chat='"+chat+"')",
+										function(data){
+											app.verFichaUsuario(data[0]);
+										}
+									);
+								});
 							}
 						}
 					});
@@ -874,7 +891,7 @@ var app = {
 				tmp = nh;
 			}
 			$(".banner-usuario.bg").show();
-			$(".banner-usuario").css('background-position','0px '+-distanceY/2+'px');
+			$(".banner-usuario").css('background-position','0px '+50-((nh*250)/bannerUsuarioHeight.bg)/2+'px');
 			$(".banner-usuario").height(tmp);
 			var textHeight = ((tmp*250)/bannerUsuarioHeight.bg);
 			$(".banner-usuario.bg").css('opacity',textHeight/250);
@@ -885,7 +902,8 @@ var app = {
 		} else {
 			if( nh>56 ){
 				$(".banner-usuario.bg").show();
-				$(".banner-usuario").css('background-position','0px '+-distanceY/2+'px');
+				$(".banner-usuario").css('background-position','0px '+50-((nh*250)/bannerUsuarioHeight.bg)/2+'px');
+				// $(".banner-usuario").css('background-position','0px '+-distanceY/2+'px');
 				$(".banner-usuario").height(nh);
 				var textHeight = ((nh*250)/bannerUsuarioHeight.bg);
 				$(".banner-usuario.bg").css('opacity',textHeight/250);

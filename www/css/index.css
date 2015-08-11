@@ -460,7 +460,9 @@ strong.display-name{
 .btn{
 	outline:0!important;
 }
-.btn:active{
+.btn:active,
+.ver-usuario:active
+{
 	background:rgba(100,100,100,0.4)
 }
 #btn-menu:active, #buscar-ususario:active{
@@ -510,10 +512,14 @@ strong.display-name{
 }
 #ficha-usuario .banner-usuario{
 	background-color:rgb(22,128,202);
+	background-repeat: no-repeat; 
+	background-attachment: fixed; 
+	background-position: -50% 50%;
+	background-size:100%;
 	position:fixed;
 	width:100%;
 	color:#ccc;
-	height:35vh;
+	height:40vh;
 	overflow:hidden;
 	z-index:1001;
 }
@@ -528,11 +534,12 @@ strong.display-name{
 	overflow: hidden;
 	text-overflow: ellipsis;
 	padding:19px 10px;
+	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3),-1px 1px 1px rgba(0, 0, 0, 0.3),1px -1px 1px rgba(0, 0, 0, 0.3),-1px -1px 1px rgba(0, 0, 0, 0.3);
 }
 #ficha-usuario .detalles-ficha-usuario{
 	background:#efefef;
 	padding:0.5em;
-	padding-top:37vh;
+	padding-top:42vh;
 	min-height:100vh;
 }
 #ficha-usuario .detalles-ficha-usuario div.clearfix{
@@ -557,6 +564,7 @@ strong.display-name{
 	left:0.3em;
 	z-index:1003;
 	color:#fff;
+	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3),-1px 1px 1px rgba(0, 0, 0, 0.3),1px -1px 1px rgba(0, 0, 0, 0.3),-1px -1px 1px rgba(0, 0, 0, 0.3);
 }
 #main-menu{
 	padding:0.5em;

@@ -1,4 +1,4 @@
-var url = "http://didactica.pablogarin.cl";
+var url = "http://proyecto.webescuela.cl/sistema/testing";
 
 var ChatContacto = function(){};
 
