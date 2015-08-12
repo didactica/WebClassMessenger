@@ -69,14 +69,15 @@ Chat.prototype.select = function(sql,filter,grupo,callback){
 	} else {
 		var query = "SELECT c.*,cct.nombre as display_name,ct.foto as display_image,(select fecha from mensaje_chat mjc where mjc.chat=c.id order by id desc limit 1) as ultimafecha,(select mensaje from mensaje_chat mjc where mjc.chat=c.id order by id desc limit 1) as ultimomensaje,(select count(1) from mensaje_chat mjc where mjc.remitente!='"+user+"' and mjc.chat=c.id and mjc.leido=0) as mensajes FROM chat c LEFT JOIN chat_contacto cct ON cct.chat=c.id and cct.contacto!='"+user+"' LEFT JOIN contacto ct ON cct.contacto=ct.idusuario "+filter+" and c.grupo=0";
 	}
-	console.log('start');
+	if (!Date.now) {
+		Date.now = function() { return new Date().getTime(); }
+	}
 	sql.transaction(
 		function(tx){
 			tx.executeSql(
 				query,
 				[],
 				function(tx,result){
-					console.log('done');
 					var chats = [];
 					for( var i=0; i<result.rows.length; i++ ){
 						var curObj = result.rows.item(i);

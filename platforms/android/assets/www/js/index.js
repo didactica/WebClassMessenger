@@ -449,7 +449,25 @@ var app = {
 							$("#chat-window").html("");
 							e.preventDefault();
 							chat = $(this).attr("data-rel");
-							app.initializeUser();
+							sql.transaction(
+								function(tx){
+									tx.executeSql(
+										"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
+										[user,chat],
+										function(tx,result){
+											if( result.rows!=null && result.rows.length>0 ){
+												var tObj = result.rows.item(0);
+												console.log( typeof tObj.silenciado );
+												silenciado = tObj.silenciado==1;
+											}
+											app.initializeUser();
+										},
+										function(tx,error){
+											app.initializeUser();
+										}
+									);
+								}
+							);
 						});
 					});
 					break;
@@ -473,7 +491,25 @@ var app = {
 							var cct = new ChatContacto();
 							cct.select(sql,contacto,function(resChat){
 								chat = resChat;
-								app.initializeUser();
+								sql.transaction(
+									function(tx){
+										tx.executeSql(
+											"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
+											[user,chat],
+											function(tx,result){
+												if( result.rows!=null && result.rows.length>0 ){
+													var tObj = result.rows.item(0);
+													console.log( typeof tObj.silenciado );
+													silenciado = tObj.silenciado==1;
+												}
+												app.initializeUser();
+											},
+											function(tx,error){
+												app.initializeUser();
+											}
+										);
+									}
+								);
 							});
 						});
 					});
@@ -495,7 +531,25 @@ var app = {
 							$("#chat-window").html("");
 							e.preventDefault();
 							chat = $(this).attr("data-rel");
-							app.initializeUser();
+							sql.transaction(
+								function(tx){
+									tx.executeSql(
+										"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
+										[user,chat],
+										function(tx,result){
+											if( result.rows!=null && result.rows.length>0 ){
+												var tObj = result.rows.item(0);
+												console.log( typeof tObj.silenciado );
+												silenciado = tObj.silenciado==1;
+											}
+											app.initializeUser();
+										},
+										function(tx,error){
+											app.initializeUser();
+										}
+									);
+								}
+							);
 						});
 					});
 					break;
@@ -671,8 +725,6 @@ var app = {
 						for( var id in result ){
 							var cObj = result[id];
 							if( typeof cObj !== 'undefined' ){
-								console.log("Silenciado?? : "+cObj.silenciado);
-								silenciado = cObj.silenciado==1;
 								tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i></a>");
 								var foto = new Image();
 								foto.src = cObj.foto;
@@ -736,7 +788,7 @@ var app = {
 					text:'Ver Usuario'
 				}
 			];
-			if( silenciado ){
+			if( !silenciado ){
 				menu.push(
 					{
 						id:'silenciar-chat',
@@ -778,7 +830,7 @@ var app = {
 		$("#silenciar-chat").off("click");
 		$("#silenciar-chat").on("click",function(e){
 			if( chat!=null ){
-				if(!silenciado){
+				if(silenciado){
 					var msg = "¿Seguro desea cancelar silencio?";
 				} else {
 					var msg = "¿Seguro desea silenciar la conversación?";
@@ -793,11 +845,11 @@ var app = {
 									var params = {
 										chat:chat,
 										user:user,
-										state:(silenciado?'1':'0')
+										state:(!silenciado?'1':'0')
 									};
 									silenciado=!silenciado;
 									app.inflateMenu();
-									console.log(params);
+									console.log(JSON.stringify(params));
 									$.ajax({
 										url:url+"/gcm/silence.php",
 										data:params,
@@ -970,8 +1022,6 @@ function timeSince(date) {
 	//*/
 }
 function backButton(){
-	console.log("backButton");
-	console.log($("#ficha-usuario").css("display"));
 	if( $("#ficha-usuario").css("display")==='block' ){
 		$("#ficha-usuario").html("").hide();
 		$(".heading, #chat, #search-group").show();
