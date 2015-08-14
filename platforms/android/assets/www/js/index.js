@@ -12,6 +12,7 @@ var alltabs = ['grupos','chats','usuarios'];
 var tab = "chats";
 var silenciado = false;
 var bannerUsuarioHeight = {};
+var c = 0;
 
 document.addEventListener("backbutton",backButton, false);
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
@@ -169,15 +170,21 @@ var app = {
 			});
 			app.populateUsers();
 		} else {
+			console.log("ckeckpoint "+c+" @ "+Date.now());
+			c++;
 			navigator.notification.activityStart("Cargando", "Cargando mensajes");
 			$("#usuarios").hide();
 			$("#chat").show();
 			$("#buscar-usuario").hide();
 			app.populateMessages();
+			console.log("ckeckpoint "+c+" @ "+Date.now());
+			c++;
 			$("#inp-message").on("focus",function(){
 				$("*").scrollTop($("#messages").height());
 				app.readMessages();
 			});
+			console.log("ckeckpoint "+c+" @ "+Date.now());
+			c++;
 			$("#btn-enviar").off("click");
 			$("#btn-enviar").on("click",function(e){
 				var message = $("#inp-message").val();
@@ -225,7 +232,6 @@ var app = {
 		alert(error);
 	},
 	onNotificationGCM: function(e) {
-		console.log(JSON.stringify(e));
 		switch( e.event )
 		{
 		case 'registered':
@@ -356,7 +362,10 @@ var app = {
 		var result = template(data);
 		$("#lista-usuarios").append(result);
 	},
-	populateMessages: function(){
+	populateMessages: function(startPoint){
+		if( typeof startPoint === 'undefined' ){
+			var startPoint = 0;
+		}
 		if( buscar ){
 			buscar = false;
 			$("#tabs-usuarios").show();
@@ -366,11 +375,42 @@ var app = {
 		}
 		$("#search-query").val("");
 		filtroUsuario = null;
+		console.log("ckeckpoint "+c+" @ "+Date.now());
+		c++;
+		notificacion.select(sql,chat,startPoint,function(mensajes){
+			console.log("ckeckpoint "+c+" @ "+Date.now());
+			c++;
+			if( mensajes.length>20 ){
+				$("ul#chat-window").html("<li class='moar-messages' onclick='app.loadMoar(); return false;'>Cargar mensajes anteriores...</li>");
+			} else {
+				$("ul#chat-window").html("");
+			}
+			for( var id in mensajes ){
+				var mes = mensajes[id];
+				var data = {
+					id : mes.id,
+					user : mes.remitente,
+					time : mes.fecha,
+					message : mes.mensaje,
+					class : (mes.leido?'fa fa-check':'fa fa-ellipsis-h')
+				};
+				if( typeof mes.titulo !== 'undefined' && tab=='grupos' ){
+					data.color = textToColor(mes.titulo);
+					data.titulo = mes.titulo;
+				}
+				app.addMessage(data);
+			}
+			navigator.notification.activityStop();
+		});
 		app.downloadMessages(function(){
 			app.readMessages();
 			app.setTitle();
 			notificacion.select(sql,chat,function(mensajes){
-				$("ul#chat-window").html("");
+				if( mensajes.length>2 ){
+					$("ul#chat-window").html("<li class='moar-messages' onclick='app.loadMoar(); return false;'>Cargar mensajes anteriores...</li>");
+				} else {
+					$("ul#chat-window").html("");
+				}
 				for( var id in mensajes ){
 					var mes = mensajes[id];
 					var data = {
@@ -386,7 +426,6 @@ var app = {
 					}
 					app.addMessage(data);
 				}
-				navigator.notification.activityStop();
 			});
 		});
 	},
@@ -430,25 +469,66 @@ var app = {
 		);
 	},
 	populateUsers: function(){
-		app.downloadUsers(function(){
-			switch(tab){
-				case 'grupos':
-					var c = new Chat();
-					c.select(sql,filtroUsuario,true,function(contactos){
-						$("#lista-usuarios").html("");
-						if( contactos.length>0 ){
-							for( var id in contactos ){
-								app.addChat(contactos[id]);
-							}
-						} else {
-							$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Grupos para mostrar</h2></div>");
+		switch(tab){
+			case 'grupos':
+				var c = new Chat();
+				c.select(sql,filtroUsuario,true,function(contactos){
+					$("#lista-usuarios").html("");
+					if( contactos.length>0 ){
+						for( var id in contactos ){
+							app.addChat(contactos[id]);
 						}
-						navigator.notification.activityStop();
-						$(".usuario").off("click");
-						$(".usuario").on("click",function(e){
-							$("#chat-window").html("");
-							e.preventDefault();
-							chat = $(this).attr("data-rel");
+					} else {
+						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Grupos para mostrar</h2></div>");
+					}
+					navigator.notification.activityStop();
+					$(".usuario").off("click");
+					$(".usuario").on("click",function(e){
+						$("#chat-window").html("");
+						e.preventDefault();
+						chat = $(this).attr("data-rel");
+						sql.transaction(
+							function(tx){
+								tx.executeSql(
+									"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
+									[user,chat],
+									function(tx,result){
+										if( result.rows!=null && result.rows.length>0 ){
+											var tObj = result.rows.item(0);
+											console.log( typeof tObj.silenciado );
+											silenciado = tObj.silenciado==1;
+										}
+										app.initializeUser();
+									},
+									function(tx,error){
+										app.initializeUser();
+									}
+								);
+							}
+						);
+					});
+				});
+				break;
+			case 'usuarios':
+				var c = new Contacto();
+				c.select(sql,filtroUsuario,function(contactos){
+					$("#lista-usuarios").html("");
+					if( contactos.length>0 ){
+						for( var id in contactos ){
+							app.addUser(contactos[id]);
+						}
+					} else {
+						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Contactos en tu lista</h2></div>");
+					}
+					navigator.notification.activityStop();
+					$(".usuario").off("click");
+					$(".usuario").on("click",function(e){
+						$("#chat-window").html("");
+						e.preventDefault();
+						var contacto = $(this).attr("data-rel");
+						var cct = new ChatContacto();
+						cct.select(sql,contacto,function(resChat){
+							chat = resChat;
 							sql.transaction(
 								function(tx){
 									tx.executeSql(
@@ -470,67 +550,109 @@ var app = {
 							);
 						});
 					});
-					break;
-				case 'usuarios':
-					var c = new Contacto();
-					c.select(sql,filtroUsuario,function(contactos){
-						$("#lista-usuarios").html("");
-						if( contactos.length>0 ){
-							for( var id in contactos ){
-								app.addUser(contactos[id]);
-							}
-						} else {
-							$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Contactos en tu lista</h2></div>");
+				});
+				break;
+			case 'chats':
+				var c = new Chat();
+				c.select(sql,filtroUsuario,false,function(contactos){
+					$("#lista-usuarios").html("");
+					if( contactos.length>0 ){
+						for( var id in contactos ){
+							app.addChat(contactos[id]);
 						}
-						navigator.notification.activityStop();
-						$(".usuario").off("click");
-						$(".usuario").on("click",function(e){
-							$("#chat-window").html("");
-							e.preventDefault();
-							var contacto = $(this).attr("data-rel");
-							var cct = new ChatContacto();
-							cct.select(sql,contacto,function(resChat){
-								chat = resChat;
-								sql.transaction(
-									function(tx){
-										tx.executeSql(
-											"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
-											[user,chat],
-											function(tx,result){
-												if( result.rows!=null && result.rows.length>0 ){
-													var tObj = result.rows.item(0);
-													console.log( typeof tObj.silenciado );
-													silenciado = tObj.silenciado==1;
-												}
-												app.initializeUser();
-											},
-											function(tx,error){
-												app.initializeUser();
-											}
-										);
+					} else {
+						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Chats para mostrar</h2></div>");
+					}
+					navigator.notification.activityStop();
+					$(".usuario").off("click");
+					$(".usuario").on("click",function(e){
+						$("#chat-window").html("");
+						e.preventDefault();
+						chat = $(this).attr("data-rel");
+						sql.transaction(
+							function(tx){
+								tx.executeSql(
+									"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
+									[user,chat],
+									function(tx,result){
+										if( result.rows!=null && result.rows.length>0 ){
+											var tObj = result.rows.item(0);
+											console.log( typeof tObj.silenciado );
+											silenciado = tObj.silenciado==1;
+										}
+										app.initializeUser();
+								},
+								function(tx,error){
+									app.initializeUser();
+								}
+							);
+						}
+					);
+				});
+			});
+			break;
+	}
+	app.downloadUsers(function(){
+		switch(tab){
+			case 'grupos':
+				var c = new Chat();
+				c.select(sql,filtroUsuario,true,function(contactos){
+					$("#lista-usuarios").html("");
+					if( contactos.length>0 ){
+						for( var id in contactos ){
+							app.addChat(contactos[id]);
+						}
+					} else {
+						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Grupos para mostrar</h2></div>");
+					}
+					navigator.notification.activityStop();
+					$(".usuario").off("click");
+					$(".usuario").on("click",function(e){
+						$("#chat-window").html("");
+						e.preventDefault();
+						chat = $(this).attr("data-rel");
+						sql.transaction(
+							function(tx){
+								tx.executeSql(
+									"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
+									[user,chat],
+									function(tx,result){
+										if( result.rows!=null && result.rows.length>0 ){
+											var tObj = result.rows.item(0);
+											console.log( typeof tObj.silenciado );
+											silenciado = tObj.silenciado==1;
+										}
+										app.initializeUser();
+									},
+									function(tx,error){
+										app.initializeUser();
 									}
 								);
-							});
-						});
-					});
-					break;
-				case 'chats':
-					var c = new Chat();
-					c.select(sql,filtroUsuario,false,function(contactos){
-						$("#lista-usuarios").html("");
-						if( contactos.length>0 ){
-							for( var id in contactos ){
-								app.addChat(contactos[id]);
 							}
-						} else {
-							$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Chats para mostrar</h2></div>");
+						);
+					});
+				});
+				break;
+			case 'usuarios':
+				var c = new Contacto();
+				c.select(sql,filtroUsuario,function(contactos){
+					$("#lista-usuarios").html("");
+					if( contactos.length>0 ){
+						for( var id in contactos ){
+							app.addUser(contactos[id]);
 						}
-						navigator.notification.activityStop();
-						$(".usuario").off("click");
-						$(".usuario").on("click",function(e){
-							$("#chat-window").html("");
-							e.preventDefault();
-							chat = $(this).attr("data-rel");
+					} else {
+						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Contactos en tu lista</h2></div>");
+					}
+					navigator.notification.activityStop();
+					$(".usuario").off("click");
+					$(".usuario").on("click",function(e){
+						$("#chat-window").html("");
+						e.preventDefault();
+						var contacto = $(this).attr("data-rel");
+						var cct = new ChatContacto();
+						cct.select(sql,contacto,function(resChat){
+							chat = resChat;
 							sql.transaction(
 								function(tx){
 									tx.executeSql(
@@ -542,6 +664,45 @@ var app = {
 												console.log( typeof tObj.silenciado );
 												silenciado = tObj.silenciado==1;
 											}
+											app.initializeUser();
+										},
+										function(tx,error){
+											app.initializeUser();
+										}
+									);
+								}
+							);
+						});
+					});
+				});
+				break;
+			case 'chats':
+				var c = new Chat();
+				c.select(sql,filtroUsuario,false,function(contactos){
+					$("#lista-usuarios").html("");
+					if( contactos.length>0 ){
+						for( var id in contactos ){
+							app.addChat(contactos[id]);
+						}
+					} else {
+						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Chats para mostrar</h2></div>");
+					}
+					navigator.notification.activityStop();
+					$(".usuario").off("click");
+					$(".usuario").on("click",function(e){
+						$("#chat-window").html("");
+						e.preventDefault();
+						chat = $(this).attr("data-rel");
+						sql.transaction(
+							function(tx){
+								tx.executeSql(
+									"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
+									[user,chat],
+									function(tx,result){
+										if( result.rows!=null && result.rows.length>0 ){
+											var tObj = result.rows.item(0);
+											silenciado = tObj.silenciado==1;
+										}
 											app.initializeUser();
 										},
 										function(tx,error){
@@ -767,10 +928,10 @@ var app = {
 		if( chat==null ){
 			if( tab=='grupos' ){
 				var menu = [
-					{
+					/*{
 						id:'crear-grupo',
 						text:'Crear Nuevo Grupo'
-					}
+					}*/
 				]
 			} else {
 				var menu = [];

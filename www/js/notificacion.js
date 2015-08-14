@@ -90,8 +90,13 @@ Notificacion.prototype.readMessages = function(sql,chat,push){
 		}
 	);
 }
-Notificacion.prototype.select = function(sql,chat,callback){
+Notificacion.prototype.select = function(sql,chat,startPoint,callback){
 	var query = "select *,cct.nombre as titulo from mensaje_chat mjc left join chat_contacto cct on mjc.chat=cct.chat and mjc.remitente=cct.contacto WHERE mjc.chat='"+chat+"'";
+	if( typeof startPoint === 'function' ){
+		callback = startPoint;
+	} else {
+		query += ' limit '+startPoint+', 20';
+	}
 	sql.transaction(
 		function(tx){
 			tx.executeSql(

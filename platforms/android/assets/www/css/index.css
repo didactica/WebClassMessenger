@@ -574,3 +574,22 @@ strong.display-name{
 	font-size:1.2em;
 	font-weight:bolder;
 }
+.moar-messages{
+	position:relative;
+	text-align:center;
+	font-color:#999;
+	background-color:#FFFFCC;
+	width:70%;
+	padding:1em;
+	margin:0 auto;
+	-webkit-border-radius:2%;
+	-moz-border-radius:2%;
+	-ms-border-radius:2%;
+	-o-border-radius:2%;
+	border-radius:2%;
+	z-index:900;
+}
+.moar-messages a,
+.moar-messages a:visited{
+	color:#999;
+}
