@@ -157,7 +157,7 @@ h1 {
 .messages{
 	min-height:70vh;
 	overflow-Y:auto;
-	margin:60px auto 60px;
+	margin:1em auto 60px;
 	position:relative;
 	z-index:-1;
 }
@@ -575,21 +575,18 @@ strong.display-name{
 	font-weight:bolder;
 }
 .moar-messages{
-	position:relative;
 	text-align:center;
-	font-color:#999;
-	background-color:#FFFFCC;
-	width:70%;
+	font-color:#eee;
+	background-color:#009999;
+	width:100%;
 	padding:1em;
 	margin:0 auto;
-	-webkit-border-radius:2%;
-	-moz-border-radius:2%;
-	-ms-border-radius:2%;
-	-o-border-radius:2%;
-	border-radius:2%;
-	z-index:900;
 }
 .moar-messages a,
 .moar-messages a:visited{
-	color:#999;
+	color:#eee;
+	text-decoration:none!important;
+}
+.moar-messages:active{
+	background-color:#006666;
 }

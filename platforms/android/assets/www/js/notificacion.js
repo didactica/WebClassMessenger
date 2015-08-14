@@ -91,12 +91,15 @@ Notificacion.prototype.readMessages = function(sql,chat,push){
 	);
 }
 Notificacion.prototype.select = function(sql,chat,startPoint,callback){
-	var query = "select *,cct.nombre as titulo from mensaje_chat mjc left join chat_contacto cct on mjc.chat=cct.chat and mjc.remitente=cct.contacto WHERE mjc.chat='"+chat+"'";
+	var query = "select * from (select *,cct.nombre as titulo,mjc.id as orden from mensaje_chat mjc left join chat_contacto cct on mjc.chat=cct.chat and mjc.remitente=cct.contacto WHERE mjc.chat='"+chat+"' order by orden desc ";
 	if( typeof startPoint === 'function' ){
 		callback = startPoint;
+		query+=' limit 0,20';
 	} else {
 		query += ' limit '+startPoint+', 20';
 	}
+	query += ") tbl order by orden asc";
+	console.log(query);
 	sql.transaction(
 		function(tx){
 			tx.executeSql(
