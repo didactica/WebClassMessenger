@@ -99,7 +99,6 @@ Notificacion.prototype.select = function(sql,chat,startPoint,callback){
 		query += ' limit '+startPoint+', 20';
 	}
 	query += ") tbl order by orden asc";
-	console.log(query);
 	sql.transaction(
 		function(tx){
 			tx.executeSql(

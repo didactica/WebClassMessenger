@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <!-- <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" /> -->
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+        <link rel="stylesheet" href="css/font-awesome.min.css" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+        <title>WebClass Messenger</title>
+    </head>
+    <body>
+		<div class="container-fluid">
+			<!-- row -->
+			<div class="row">
+				<!-- col-md-12 -->
+				<div class="col-md-12 full-width">
+					<!-- chat-container  -->
+					<div id="chat-container">
+						<!-- search-group -->
+						<div id="search-group">
+							<a href='#' onclick='backButton(); return false;' class='pull-left'>
+								<i class='fa fa-angle-left fa-2x'></i>
+							</a>
+							<div class="pull-left">
+								<input type="text" name="search" id="search-query" placeholder="Buscar..."/>
+							</div>
+						</div>
+						<!-- search-group -->
+						<!-- heading -->
+						<div class="heading">
+							<span id="titulo">&nbsp;WebClass</span>
+							<div class="btn-group pull-right">
+								<button id="btn-menu" type="button" class="btn btn-link dropdown-toggle hide-login collapse" data-toggle="dropdown">
+									<span class="glyphicon glyphicon-option-vertical" aria-hidden="true"></span>
+								</button>
+								<ul id="main-menu" class="dropdown-menu slidedown">
+									<li><a href="#" id="btn-logout">Cerrar Sesi&oacute;n</a></li>
+								</ul>
+							</div>
+							<button id="buscar-usuario" class="btn btn-link pull-right hide-login collapse">
+								<span class="glyphicon glyphicon-search" aria-hidden="true" style="color:#fff"></span>
+							</button>
+						</div>
+						<!-- heading -->
+						<!-- login-container -->
+						<div id="login-container" class="collapse">
+							<form id="login-form">
+								<h3 class="content-header">Login</h3>
+								<hr/>
+								<div class="form-group">
+									<input type="text" class="form-control input-lg" name="usuario" id="usuario"  placeholder="Usuario" />
+								</div>
+								<div class="form-group">
+									<input type="password" class="form-control input-lg" name="password" id="password" placeholder="Clave"/>
+								</div>
+								<div class="form-group">
+									<button class="btn btn-info btn-lg"><i class="fa fa-sign-in"></i> Entrar</button>
+								</div>
+								<center>
+									<a href="#" onclick="window.open('http://proyecto.webescuela.cl/sistema/webclass/','_system','location=no');">Olvid&eacute; mi clave</a>
+								</center>
+							</form>
+						</div>
+						<!-- login-container -->
+						<!-- main-content -->
+						<div id="main-content" class="hide-login collapse">
+							<div id="usuarios">
+								<div id="tabs-usuarios">
+									<ul class="nav nav-tabs hide-login collapse">
+										<li><a href="#grupos">GRUPOS <span id="grupo-new" class="badge collapse">1</span></a></li>
+										<li><a href="#chats">CHATS <span id="chat-new" class="badge collapse">1</span></a></li>
+										<li class="active"><a href="#usuarios">USUARIOS</a></li>
+									</ul>
+								</div>
+								<div id="lista-usuarios"></div>
+							</div>
+							<div id="chat" class="collapse">
+								<div class="spacer" style="margin-top:4em;"></div>
+								<div class="moar-messages collapse"><a href="#">MOSTRAR MENSAJES ANTERIORES</a></div>
+								<div id="messages" class="messages">
+									<ul id="chat-window" class="chat">
+									</ul>
+								</div>
+								<div class="writemessage">
+									<div class="inputContainer">
+										<input id="inp-message" type="text" name="message" class="pull-left" placeholder="Escribe aquí" />
+									</div>
+									<div class="chat-arrow-shadow pull-left"></div>
+									<div class="chat-arrow pull-left"></div>
+									<button class="btn btn-info btn-lg pull-right" id="btn-enviar"><i class="fa fa-send-o"></i></button>
+								</div>
+							</div>
+							<div id="ficha-usuario" class="collapse">
+							</div>
+						</div>
+						<!-- main-content -->
+					</div>
+					<!-- chat-container  -->
+				</div>
+				<!-- col-md-12 -->
+			</div>
+			<!-- row -->
+		</div>
+		<script id="outgoing-chat" type="text/html">
+			<li class="right clearfix panel">
+				<div class="chat-body clearfix">
+					<p class="message">
+					{{message}}
+					</p>
+					<div class="header">
+						<small class="pull-right text-muted">
+							{{time}} <i class="{{class}}" data-rel="{{id}}"></i>
+						</small>
+					</div>
+				</div>
+			</li>
+		</script>
+		<script id="incoming-chat" type="text/html">
+			<li class="left clearfix panel">
+				<div class="chat-body clearfix">
+					{{#if titulo}}
+					<strong class="group-user" style="color:{{color}};">{{titulo}}</strong>
+					{{/if}}
+					<p class="message">
+					{{message}}
+					</p>
+					<div class="header">
+						<small class="pull-right text-muted">
+							{{time}}
+						</small>
+					</div>
+				</div>
+			</li>
+		</script>
+		<script id="usuario-div" type="text/html">
+			<a href="#" data-rel="{{idusuario}}" class="usuario clearfix">
+				<div class="foto-usuario">
+					<img src="{{foto}}" alt="usuario">
+				</div>
+				<div class="detalle">
+					<p>
+						<strong>{{nombre}}{{#if apellido}} {{apellido}}{{/if}}</strong>
+						<br/>
+						<span class="muted mensajepreview">{{tipo}}</span>
+					</p>
+				</div>
+			</a>
+		</script>
+		<script id="chat-div" type="text/html">
+			<a href="#" data-rel="{{id}}" class="usuario clearfix">
+				<div class="foto-usuario">
+					<img src="{{display_image}}" alt="usuario">
+				</div>
+				<div class="detalle">
+					<p>
+						<strong class="display-name">{{display_name}}</strong>
+						<small class="muted pull-right">{{time}}</small>
+						<br/>
+						<span class="muted mensajepreview">{{mensaje}}</span>{{#if mensajes}}<small class="pull-right badge">{{mensajes}}</small>{{/if}}
+					</p>
+				</div>
+			</a>
+		</script>
+		<script id="menu-template" type="text/html">
+			<li><a href="#" id="{{id}}">{{text}}</a></li>
+		</script>
+		<script id="ficha-usuario-template" type="text/html">
+			<div id="back-ficha-usuario" onclick="backButton(); return false;">
+				<span><i class="fa fa-angle-left fa-2x"></i></span>
+			</div>
+			<div class="banner-usuario" style="background-color:rgb(22,128,202); background-size:100%;">
+				<span class="nombre-usuario">{{nombre}} {{apellido}}</span>
+			</div>
+			<div class="banner-usuario bg" style="background-image:url({{foto}});">
+				<span class="nombre-usuario">{{nombre}} {{apellido}}</span>
+			</div>
+			<div class="detalles-ficha-usuario">
+				<div class="panel clearfix">
+					<div class="content">
+						<p style="padding:1em; text-align:center;">
+							<strong style="font-size:1.5em;">{{nombre}} {{apellido}}</strong><br/>
+							<span class="muted">{{tipo}}</span>
+						</p>
+					</div>
+				</div>
+				<div class="panel clearfix">
+					<h5>Grupos en com&uacute;n</h5>
+					<hr/>
+					<div class="content">
+					{{#if grupos}}
+						{{#each grupoArray}}
+						<div class="grupo">
+							<a href="#" class="usuario clearfix" onclick="backButton(); chat = {{id}}; tab = 'grupos'; app.initializeUser(); return false;">
+								<div class="foto-usuario">
+									<img src="{{display_image}}">
+								</div>
+								<div class="detalle">
+									<p>
+										<strong class="display-name">{{display_name}}</strong>
+									</p>
+								</div>
+							</a>
+						</div>
+						{{/each}}
+					{{else}}
+						<strong>No hay grupos</strong>
+					{{/if}}
+					</div>
+				</div>
+			</div>
+		</script>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/PushNotification.js"></script>
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/handlebars.js"></script>
+		<script type="text/javascript" src="js/contacto.js"></script>
+		<script type="text/javascript" src="js/notificacion.js"></script>
+		<script type="text/javascript" src="js/chat.js"></script>
+		<script type="text/javascript" src="js/chat_contacto.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript">
+            app.initialize();
+        </script>
+    </body>
+</html>

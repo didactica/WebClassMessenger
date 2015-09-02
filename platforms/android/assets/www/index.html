@@ -7,7 +7,7 @@
         <meta name="msapplication-tap-highlight" content="no" />
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <!-- <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" /> -->
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <link rel="stylesheet" href="css/font-awesome.min.css" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
@@ -22,7 +22,7 @@
 					<!-- chat-container  -->
 					<div id="chat-container">
 						<!-- search-group -->
-						<div id="search-group">
+						<div id="search-group" class="hide-login">
 							<a href='#' onclick='backButton(); return false;' class='pull-left'>
 								<i class='fa fa-angle-left fa-2x'></i>
 							</a>
@@ -32,7 +32,7 @@
 						</div>
 						<!-- search-group -->
 						<!-- heading -->
-						<div class="heading">
+						<div class="heading hide-login">
 							<span id="titulo">&nbsp;WebClass</span>
 							<div class="btn-group pull-right">
 								<button id="btn-menu" type="button" class="btn btn-link dropdown-toggle hide-login collapse" data-toggle="dropdown">
@@ -47,34 +47,14 @@
 							</button>
 						</div>
 						<!-- heading -->
-						<!-- login-container -->
-						<div id="login-container" class="collapse">
-							<form id="login-form">
-								<h3 class="content-header">Login</h3>
-								<hr/>
-								<div class="form-group">
-									<input type="text" class="form-control input-lg" name="usuario" id="usuario"  placeholder="Usuario" />
-								</div>
-								<div class="form-group">
-									<input type="password" class="form-control input-lg" name="password" id="password" placeholder="Clave"/>
-								</div>
-								<div class="form-group">
-									<button class="btn btn-info btn-lg"><i class="fa fa-sign-in"></i> Entrar</button>
-								</div>
-								<center>
-									<a href="#" onclick="window.open('http://proyecto.webescuela.cl/sistema/webclass/','_system','location=no');">Olvid&eacute; mi clave</a>
-								</center>
-							</form>
-						</div>
-						<!-- login-container -->
 						<!-- main-content -->
 						<div id="main-content" class="hide-login collapse">
 							<div id="usuarios">
 								<div id="tabs-usuarios">
-									<ul class="nav nav-tabs hide-login collapse">
-										<li><a href="#grupos">GRUPOS <span id="grupo-new" class="badge collapse">1</span></a></li>
-										<li><a href="#chats">CHATS <span id="chat-new" class="badge collapse">1</span></a></li>
-										<li class="active"><a href="#usuarios">USUARIOS</a></li>
+									<ul class="hide-login">
+										<li><a href="#grupos">GRUPOS <span id="grupo-new" class="badge collapse">1</span></a></li><!--
+										--><li><a href="#chats">CHATS <span id="chat-new" class="badge collapse">1</span></a></li><!--
+										--><li class="active"><a href="#usuarios">USUARIOS</a></li>
 									</ul>
 								</div>
 								<div id="lista-usuarios"></div>
@@ -99,6 +79,23 @@
 							</div>
 						</div>
 						<!-- main-content -->
+						<!-- login-container -->
+						<div id="login-container" class="collapse">
+							<form id="login-form">
+								<div style="width:80%; margin:0 auto 30px; padding-top:40px;"><img class="img-responsive" src="img/logo.png"></div>
+								<div class="login-inputs">
+									<input type="text" class="input-lg" name="usuario" id="usuario"  placeholder="&#xf007;     Usuario" />
+									<input type="password" class="input-lg" name="password" id="password" placeholder="&#xf084;     Clave"/>
+								</div>
+								<div class="form-group">
+									<button class="btn btn-info btn-lg"><i class="fa fa-sign-in"></i> Entrar</button>
+								</div>
+								<div style="text-align:center;">
+									<a href="#" onclick="window.open('http://proyecto.webescuela.cl/sistema/webclass/','_system','location=no');">Olvid&eacute; mi clave</a>
+								</div>
+							</form>
+						</div>
+						<!-- login-container -->
 					</div>
 					<!-- chat-container  -->
 				</div>
@@ -110,7 +107,7 @@
 			<li class="right clearfix panel">
 				<div class="chat-body clearfix">
 					<p class="message">
-					{{message}}
+					{{{message}}}
 					</p>
 					<div class="header">
 						<small class="pull-right text-muted">
@@ -127,7 +124,7 @@
 					<strong class="group-user" style="color:{{color}};">{{titulo}}</strong>
 					{{/if}}
 					<p class="message">
-					{{message}}
+					{{{message}}}
 					</p>
 					<div class="header">
 						<small class="pull-right text-muted">

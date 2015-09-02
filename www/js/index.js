@@ -14,7 +14,6 @@ var silenciado = false;
 var bannerUsuarioHeight = {};
 var limitOffset = 0;
 
-document.addEventListener("backbutton",backButton, false);
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
 $("#tabs-usuarios li, #tabs-usuarios a").on("click",function(e){
 	e.preventDefault();
@@ -32,6 +31,7 @@ var app = {
     // Bind any events that are required on startup. Common events are:
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
+		document.addEventListener("backbutton",backButton, false);
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
     // deviceready Event Handler
@@ -110,19 +110,19 @@ var app = {
 		if( chat==null ){
 			app.getNewMessages();
 			$("#lista-usuarios").html("");
-			$("#tabs-usuarios ul.nav.nav-tabs li").removeClass("active");
+			$("#tabs-usuarios ul li").removeClass("active");
 			switch(tab){
 				case 'usuarios':
 					navigator.notification.activityStart("Cargando", "Cargando lista de usuarios");
-					$("#tabs-usuarios ul.nav.nav-tabs li a[href='#usuarios']").parents('li').addClass("active");
+					$("#tabs-usuarios ul li a[href='#usuarios']").parents('li').addClass("active");
 					break;
 				case 'grupos':
 					navigator.notification.activityStart("Cargando", "Cargando grupos");
-					$("#tabs-usuarios ul.nav.nav-tabs li a[href='#grupos']").parents('li').addClass("active");
+					$("#tabs-usuarios ul li a[href='#grupos']").parents('li').addClass("active");
 					break;
 				case 'chats':
 					navigator.notification.activityStart("Cargando", "Cargando chats");
-					$("#tabs-usuarios ul.nav.nav-tabs li a[href='#chats']").parents('li').addClass("active");
+					$("#tabs-usuarios ul li a[href='#chats']").parents('li').addClass("active");
 					break;
 			}
 			filtroUsuario = null;
@@ -320,6 +320,9 @@ var app = {
 		}
 		var t = (data.time).split(/[- :]/);
 		data.time = timeSince(new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]));
+		if( (data.message).indexOf("data:image/jpeg;base64,") > -1 ){
+			data.message = "<img class='thumb img-responsive' src='"+data.message+"'>";
+		}
 		var template = Handlebars.compile(source);
 		var result = template(data);
 		$("#chat-window").append(result);
@@ -930,13 +933,14 @@ var app = {
 							var cObj = result[id];
 							if( typeof cObj !== 'undefined' ){
 								silenciado = cObj.silenciado==1;
-								tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i></a>");
+								tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i>");
 								var foto = new Image();
 								foto.src = cObj.foto;
 								var imgCont = document.createElement("div")
 								imgCont.className = "foto-usuario";
 								imgCont.appendChild(foto);
 								tDom.append(imgCont);
+								tDom.append("</a>");
 								tDom.append(cObj.display_name);
 							}
 						}
@@ -1011,6 +1015,10 @@ var app = {
 				{
 					id:'ver-usuario',
 					text:'Ver Usuario'
+				},
+				{
+					id:'sacar-foto',
+					text:'Adjuntar Foto'
 				}
 			];
 			if( !silenciado ){
@@ -1051,6 +1059,44 @@ var app = {
 					app.verFichaUsuario(data[0]);
 				}
 			);
+		});
+		$("#sacar-foto").off("click");
+		$("#sacar-foto").on("click",function(e){
+			navigator.camera.getPicture(onSuccess, onFail, { quality: 50,
+				destinationType: Camera.DestinationType.DATA_URL
+			});
+			function onSuccess(imageData) {
+				navigator.notification.activityStart("Enviando","Enviando mensaje...");
+				var dt = new Date();
+				var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
+				var postData = {
+					remitente:user,
+					chat:chat,
+					message:("data:image/jpeg;base64," + imageData),
+					fecha:fecha
+				};
+				$.ajax({
+					url:url+"/gcm/send.php?push=true",
+					data:postData,
+					type:'POST',
+					dataType:'json',
+					success:function(resp){
+						navigator.notification.activityStop();
+						$("#inp-message").val("");
+						resp.data.class = "fa fa-ellipsis-h";
+						app.addMessage(resp.data);
+					},
+					error: function(resp,error){
+						console.log(JSON.stringify(resp));
+						console.log(error);
+						navigator.notification.activityStop();
+						navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
+					}
+				});
+			}
+			function onFail(message) {
+				alert('Failed because: ' + message);
+			}
 		});
 		$("#silenciar-chat").off("click");
 		$("#silenciar-chat").on("click",function(e){
