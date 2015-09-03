@@ -1400,7 +1400,7 @@ function downloadImage(imageURL,fileName){
 			function fileExists(){
 				window.open(entry.toURL(), "_system", "location=yes")
 			}
-			function fileDoesNotExists(){
+			function fileDoesNotExist(){
 				var fileTransfer = new FileTransfer();
 				var uri = encodeURI(imageURL);
 
