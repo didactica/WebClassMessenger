@@ -320,9 +320,12 @@ var app = {
 		}
 		var t = (data.time).split(/[- :]/);
 		data.time = timeSince(new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5]));
-		if( (data.message).indexOf("data:image/jpeg;base64,") > -1 ){
-			data.message = "<img class='thumb img-responsive' src='"+data.message+"'>";
+		//*
+		if( (data.message).indexOf("data:image/jpg;base64,") > -1 ){
+			data.message = (data.message).replace(/\\"/g,'"');
+			data.message = (data.message).replace(/\\'/g,"'");
 		}
+		//*/
 		var template = Handlebars.compile(source);
 		var result = template(data);
 		$("#chat-window").append(result);
@@ -336,18 +339,22 @@ var app = {
 			data.time = 'Nunca';
 		}
 		var mensaje = data.ultimomensaje;
-		if( typeof mensaje!== 'undefined' && mensaje!=null ){
-			if( typeof data.lastusuario === 'undefined' || data.lastusuario==null ){
-			} else {
-				mensaje = data.lastusuario+": "+mensaje;
-			}
-			if( (mensaje).length>25 ){
-				data.mensaje = (mensaje).substr(0, 25) + "\u2026";
-			} else {
-				data.mensaje = mensaje;
-			}
+		if( (mensaje).indexOf("<img") > -1 ){
+			data.mensaje = "<span style='font-family:FontAwesome;'>&#xf030;</span> Imagen";
 		} else {
-			data.mensaje = '';
+			if( typeof mensaje!== 'undefined' && mensaje!=null ){
+				if( typeof data.lastusuario === 'undefined' || data.lastusuario==null ){
+				} else {
+					mensaje = data.lastusuario+": "+mensaje;
+				}
+				if( (mensaje).length>25 ){
+					data.mensaje = (mensaje).substr(0, 25) + "\u2026";
+				} else {
+					data.mensaje = mensaje;
+				}
+			} else {
+				data.mensaje = '';
+			}
 		}
 		var source = $("#chat-div").html();
 		var template = Handlebars.compile(source);
@@ -1062,25 +1069,86 @@ var app = {
 		});
 		$("#sacar-foto").off("click");
 		$("#sacar-foto").on("click",function(e){
-			navigator.camera.getPicture(onSuccess, onFail, { quality: 50,
-				destinationType: Camera.DestinationType.DATA_URL
+			//TODO: MAKE THE SOURCE OF PHOTO SELECTABLE
+			$("#select-source").show('slow');
+		});
+		$("#select-source a").off("click");
+		$("#select-source a").on("click",function(){
+			$("#select-source").hide(1000);
+			var action = parseInt($(this).attr("data-ref"));
+			switch( action ){
+				case 1:
+					var source = Camera.PictureSourceType.PHOTOLIBRARY;
+					var destination = Camera.DestinationType.FILE_URI;
+					break;
+				case 2:
+					var source = Camera.PictureSourceType.CAMERA;
+					var destination = Camera.DestinationType.NATIVE_URI;
+					break;
+			}
+			navigator.camera.getPicture(onSuccess, onFail, { 
+				quality			: 50,
+				destinationType	: destination,
+				sourceType		: source,
+				correctOrientation:true,
+				saveToPhotoAlbum:true/*,
+				allowEdit		: true */
 			});
-			function onSuccess(imageData) {
-				navigator.notification.activityStart("Enviando","Enviando mensaje...");
-				var dt = new Date();
-				var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
-				var data = {
-					user:user,
-					message:("data:image/jpeg;base64," + imageData),
-					time:fecha
-				};
-				data.class = "fa fa-ellipsis-h";
-				app.addMessage(data);
-				navigator.notification.activityStop();
-				$("#inp-message").val("");
+			function onSuccess(imageURI) {
+				var options = new FileUploadOptions();
+				options.fileKey="file";
+				options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
+				options.mimeType="image/jpeg";
+
+				/*
+				var params = new Object();
+				params.value1 = "test";
+				params.value2 = "param";
+
+				options.params = params;
+				*/
+				options.chunkedMode = false;
+
+				var ft = new FileTransfer();
+				ft.upload(imageURI, "http://didactica.pablogarin.cl/mobile/upload.php", win, fail, options);
+				function win(resp){
+					var message = resp.response;
+					if( message.length>0 || message!='' ){
+						navigator.notification.activityStart("Enviando","Enviando foto...");
+						var dt = new Date();
+						var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
+						var postData = {
+							remitente:user,
+							chat:chat,
+							message:message,
+							fecha:fecha
+						};
+						$.ajax({
+							url:url+"/gcm/send.php?push=true",
+							data:postData,
+							type:'POST',
+							dataType:'json',
+							success:function(resp){
+								navigator.notification.activityStop();
+								$("#inp-message").val("");
+								resp.data.class = "fa fa-ellipsis-h";
+								app.addMessage(resp.data);
+							},
+							error: function(resp,error){
+								console.log(JSON.stringify(resp));
+								console.log(error);
+								navigator.notification.activityStop();
+								navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
+							}
+						});
+					}
+				}
+				function fail(error){
+				}
 			}
 			function onFail(message) {
-				alert('Failed because: ' + message);
+				console.log(message);
+				//alert('Failed because: ' + message);
 			}
 		});
 		$("#silenciar-chat").off("click");
@@ -1310,4 +1378,55 @@ function textToColor(text){
 		return "#"+color;
 	}
 	return '#000000';
+}
+function downloadImage(imageURL,fileName){
+	window.requestFileSystem(
+		LocalFileSystem.PERSISTENT, 
+		0, 
+		function(fileSystem){
+			var directoryEntry = fileSystem.root; // to get root path of directory
+			directoryEntry.getDirectory("WebClass\ Fotos", { create: true, exclusive: false }, function(){}, function(error){ alert("No se pudo crear la carpeta: "+error); }); // creating folder in sdcard
+			var rootdir = fileSystem.root;
+			var fp = rootdir.toURL(); // Returns Fulpath of local directory
+
+			var filePath = fp + "WebClass\ Fotos/" +fileName;
+			navigator.notification.activityStart("Descargando","Descargando imagen, por favor espere...");
+			//TODO: check if image exists
+			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
+				fileSystem.root.getFile(filePath, { create: false }, fileExists, fileDoesNotExist);
+			}, function(error){
+				console.log(error);
+			}); //of requestFileSystem
+			function fileExists(){
+				window.open(entry.toURL(), "_system", "location=yes")
+			}
+			function fileDoesNotExists(){
+				var fileTransfer = new FileTransfer();
+				var uri = encodeURI(imageURL);
+
+				fileTransfer.download(
+					uri,
+					filePath,
+					function(entry) {
+						navigator.notification.activityStop();
+						fileExists();
+					},
+					function(error) {
+						console.log("download error source " + error.source);
+						console.log("download error target " + error.target);
+						console.log("upload error code" + error.code);
+					},
+					false,
+					{
+						headers: {
+							"Authorization": "Basic dGVzdHVzZXJuYW1lOnRlc3RwYXNzd29yZA=="
+						}
+					}
+				);
+			}
+		}, 
+		function(error){
+			console.log(error);
+		}
+	);
 }

@@ -16,6 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+@font-face {
+font-family: 'FontAwesome';
+src: url('../fonts/fontawesome-webfont.eot');
+src: url('../fonts/fontawesome-webfont.eot?#iefix') format('embedded-opentype'),
+     url('../fonts/fontawesome-webfont.woff') format('woff'),
+     url('../fonts/fontawesome-webfont.ttf') format('truetype');
+font-weight: normal;
+font-style: normal;
+}
 * {
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
@@ -157,8 +166,9 @@ h1 {
 .messages{
 	min-height:70vh;
 	overflow-Y:auto;
+	width:100%;
+	overflow-X:hidden;
 	margin:14px auto 60px;
-	position:relative;
 	z-index:-1;
 }
 .writemessage{
@@ -169,6 +179,7 @@ h1 {
 	left:0px;
 	background:#ffffff;
 	display:inline-block;
+	z-index:1000;
 }
 .writemessage .inputContainer{
 	float:left;
@@ -660,12 +671,39 @@ strong.display-name{
 .moar-messages:active{
 	background-color:#006666;
 }
-@font-face {
-font-family: 'FontAwesome';
-src: url('../fonts/fontawesome-webfont.eot');
-src: url('../fonts/fontawesome-webfont.eot?#iefix') format('embedded-opentype'),
-     url('../fonts/fontawesome-webfont.woff') format('woff'),
-     url('../fonts/fontawesome-webfont.ttf') format('truetype');
-font-weight: normal;
-font-style: normal;
+#select-source{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	background:#fff;
+	border-bottom:1px solid #555;
+	display:none;
+	z-index:300
 }
+#select-source a{
+	width:50%;
+	float:left;
+	text-align:center;
+	padding:10px;
+	color:#fff;
+}
+#select-source a:active{
+	background:#dedede;
+}
+#select-source a i.fa{
+	width:50px;
+	height:50px;
+	line-height:50px;
+	background:#ac547f;
+	border-radius:50%;
+	-o-border-radius:50%;
+	-moz-border-radius:50%;
+	-webkit-border-radius:50%;
+	font-weight:bolder;
+	color:#fff;
+}
+#select-source a span{
+	color:#555;
+}
+

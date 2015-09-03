@@ -49,6 +49,20 @@
 						<!-- heading -->
 						<!-- main-content -->
 						<div id="main-content" class="hide-login collapse">
+							<div id="menu-container-fixed" style="position:fixed; width:100%; z-index:300;">
+								<div id="select-source">
+									<a href="#" data-ref="1">
+										<i class="fa fa-picture-o fa-flip-horizontal fa-2x"></i>
+										<br/>
+										<span>Galería</span>
+									</a>
+									<a href="#" data-ref="2">
+										<i class="fa fa-camera-retro fa-2x"></i>
+										<br/>
+										<span>Camara</span>
+									</a>
+								</div>
+							</div>
 							<div id="usuarios">
 								<div id="tabs-usuarios">
 									<ul class="hide-login">
@@ -158,7 +172,7 @@
 						<strong class="display-name">{{display_name}}</strong>
 						<small class="muted pull-right">{{time}}</small>
 						<br/>
-						<span class="muted mensajepreview">{{mensaje}}</span>{{#if mensajes}}<small class="pull-right badge">{{mensajes}}</small>{{/if}}
+						<span class="muted mensajepreview">{{{mensaje}}}</span>{{#if mensajes}}<small class="pull-right badge">{{mensajes}}</small>{{/if}}
 					</p>
 				</div>
 			</a>

@@ -31,6 +31,14 @@
                         {
                             "xml": "<feature name=\"Camera\"><param name=\"android-package\" value=\"org.apache.cordova.camera.CameraLauncher\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"File\"><param name=\"android-package\" value=\"org.apache.cordova.file.FileUtils\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"FileTransfer\"><param name=\"android-package\" value=\"org.apache.cordova.filetransfer.FileTransfer\" /></feature>",
+                            "count": 1
                         }
                     ]
                 }
@@ -88,6 +96,16 @@
                         },
                         {
                             "xml": "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />",
+                            "count": 3
+                        }
+                    ]
+                }
+            },
+            "config.xml": {
+                "parents": {
+                    "/*": [
+                        {
+                            "xml": "<preference name=\"AndroidPersistentFileLocation\" value=\"Internal\" />",
                             "count": 1
                         }
                     ]
@@ -112,6 +130,12 @@
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         },
         "cordova-plugin-camera": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "cordova-plugin-file": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "cordova-plugin-file-transfer": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         }
     },
