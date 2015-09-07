@@ -76,11 +76,8 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
-    <feature name="PushPlugin">
+    <feature name="PushNotification">
         <param name="ios-package" value="PushPlugin" />
-    </feature>
-    <feature name="InAppBrowser">
-        <param name="ios-package" value="CDVInAppBrowser" />
     </feature>
     <feature name="Notification">
         <param name="ios-package" value="CDVNotification" />
@@ -99,5 +96,8 @@
     </feature>
     <feature name="FileTransfer">
         <param name="ios-package" value="CDVFileTransfer" />
+    </feature>
+    <feature name="InAppBrowser">
+        <param name="ios-package" value="CDVInAppBrowser" />
     </feature>
 </widget>

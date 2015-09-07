@@ -1,38 +1,30 @@
 cordova.define('cordova/plugin_list', function(require, exports, module) {
 module.exports = [
     {
-        "file": "plugins/com.phonegap.plugins.PushPlugin/www/PushNotification.js",
-        "id": "com.phonegap.plugins.PushPlugin.PushNotification",
+        "file": "plugins/phonegap-plugin-push/www/push.js",
+        "id": "phonegap-plugin-push.PushNotification",
         "clobbers": [
             "PushNotification"
         ]
     },
     {
-        "file": "plugins/cordova-plugin-inappbrowser/www/inappbrowser.js",
-        "id": "cordova-plugin-inappbrowser.inappbrowser",
-        "clobbers": [
-            "cordova.InAppBrowser.open",
-            "window.open"
-        ]
-    },
-    {
-        "file": "plugins/org.apache.cordova.dialogs/www/notification.js",
-        "id": "org.apache.cordova.dialogs.notification",
+        "file": "plugins/cordova-plugin-dialogs/www/notification.js",
+        "id": "cordova-plugin-dialogs.notification",
         "merges": [
             "navigator.notification"
         ]
     },
     {
-        "file": "plugins/org.apache.cordova.network-information/www/network.js",
-        "id": "org.apache.cordova.network-information.network",
+        "file": "plugins/cordova-plugin-network-information/www/network.js",
+        "id": "cordova-plugin-network-information.network",
         "clobbers": [
             "navigator.connection",
             "navigator.network.connection"
         ]
     },
     {
-        "file": "plugins/org.apache.cordova.network-information/www/Connection.js",
-        "id": "org.apache.cordova.network-information.Connection",
+        "file": "plugins/cordova-plugin-network-information/www/Connection.js",
+        "id": "cordova-plugin-network-information.Connection",
         "clobbers": [
             "Connection"
         ]
@@ -224,19 +216,27 @@ module.exports = [
         "clobbers": [
             "window.FileTransfer"
         ]
+    },
+    {
+        "file": "plugins/cordova-plugin-inappbrowser/www/inappbrowser.js",
+        "id": "cordova-plugin-inappbrowser.inappbrowser",
+        "clobbers": [
+            "cordova.InAppBrowser.open",
+            "window.open"
+        ]
     }
 ];
 module.exports.metadata = 
 // TOP OF METADATA
 {
-    "com.phonegap.plugins.PushPlugin": "2.5.0",
-    "cordova-plugin-inappbrowser": "1.0.2-dev",
-    "cordova-plugin-whitelist": "1.0.0",
-    "org.apache.cordova.dialogs": "0.3.0",
-    "org.apache.cordova.network-information": "0.2.15",
+    "phonegap-plugin-push": "1.2.2",
+    "cordova-plugin-dialogs": "1.1.1",
+    "cordova-plugin-network-information": "1.0.1",
     "cordova-plugin-camera": "1.2.0",
     "cordova-plugin-file": "3.0.0",
-    "cordova-plugin-file-transfer": "1.2.1"
+    "cordova-plugin-file-transfer": "1.2.1",
+    "cordova-plugin-inappbrowser": "1.0.1",
+    "cordova-plugin-whitelist": "1.0.0"
 }
 // BOTTOM OF METADATA
 });

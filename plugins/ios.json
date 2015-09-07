@@ -9,11 +9,7 @@
                 "parents": {
                     "/*": [
                         {
-                            "xml": "<feature name=\"PushPlugin\"><param name=\"ios-package\" value=\"PushPlugin\" /></feature>",
-                            "count": 1
-                        },
-                        {
-                            "xml": "<feature name=\"InAppBrowser\"><param name=\"ios-package\" value=\"CDVInAppBrowser\" /></feature>",
+                            "xml": "<feature name=\"PushNotification\"><param name=\"ios-package\" value=\"PushPlugin\" /></feature>",
                             "count": 1
                         },
                         {
@@ -42,6 +38,10 @@
                         },
                         {
                             "xml": "<feature name=\"FileTransfer\"><param name=\"ios-package\" value=\"CDVFileTransfer\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"InAppBrowser\"><param name=\"ios-package\" value=\"CDVInAppBrowser\" /></feature>",
                             "count": 1
                         }
                     ]
@@ -112,19 +112,13 @@
         }
     },
     "installed_plugins": {
-        "com.phonegap.plugins.PushPlugin": {
+        "phonegap-plugin-push": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         },
-        "cordova-plugin-inappbrowser": {
+        "cordova-plugin-dialogs": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         },
-        "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
-        },
-        "org.apache.cordova.dialogs": {
-            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
-        },
-        "org.apache.cordova.network-information": {
+        "cordova-plugin-network-information": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         },
         "cordova-plugin-camera": {
@@ -134,6 +128,12 @@
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         },
         "cordova-plugin-file-transfer": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "cordova-plugin-inappbrowser": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         }
     },

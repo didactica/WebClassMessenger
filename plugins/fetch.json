@@ -1,13 +1,4 @@
 {
-    "com.phonegap.plugins.PushPlugin": {
-        "source": {
-            "type": "git",
-            "url": "https://github.com/phonegap-build/PushPlugin",
-            "subdir": "."
-        },
-        "is_top_level": true,
-        "variables": {}
-    },
     "org.apache.cordova.device": {
         "source": {
             "type": "registry",
@@ -16,34 +7,26 @@
         "is_top_level": false,
         "variables": {}
     },
-    "cordova-plugin-whitelist": {
+    "phonegap-plugin-push": {
         "source": {
             "type": "registry",
-            "id": "cordova-plugin-whitelist@1"
+            "id": "phonegap-plugin-push"
         },
         "is_top_level": true,
         "variables": {}
     },
-    "cordova-plugin-inappbrowser": {
+    "cordova-plugin-dialogs": {
         "source": {
             "type": "registry",
-            "id": "cordova-plugin-inappbrowser"
+            "id": "cordova-plugin-dialogs"
         },
         "is_top_level": true,
         "variables": {}
     },
-    "org.apache.cordova.dialogs": {
+    "cordova-plugin-network-information": {
         "source": {
             "type": "registry",
-            "id": "org.apache.cordova.dialogs"
-        },
-        "is_top_level": true,
-        "variables": {}
-    },
-    "org.apache.cordova.network-information": {
-        "source": {
-            "type": "registry",
-            "id": "org.apache.cordova.network-information"
+            "id": "cordova-plugin-network-information"
         },
         "is_top_level": true,
         "variables": {}
@@ -68,6 +51,22 @@
         "source": {
             "type": "registry",
             "id": "cordova-plugin-file-transfer"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-inappbrowser": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-inappbrowser"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "cordova-plugin-whitelist": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-whitelist"
         },
         "is_top_level": true,
         "variables": {}
