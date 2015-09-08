@@ -33,7 +33,7 @@ var app = {
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
 		document.addEventListener("backbutton",backButton, false);
-        document.addEventListener('deviceready', this.onDeviceReady, false);
+        document.addEventListener("deviceready", this.onDeviceReady, false);
     },
     // deviceready Event Handler
     //
@@ -252,13 +252,6 @@ var app = {
 		}
 	},
 	pushMessage: function(data) {
-		console.log(JSON.stringify(data));
-		// data.message,
-		// data.title,
-		// data.count,
-		// data.sound,
-		// data.image, 
-		// data.additionalData
 		if( data.additionalData.read=='true' || data.additionalData.read ){
 			if( data.additionalData.chat==chat ){
 				$(".fa.fa-ellipsis-h").removeClass("fa-ellipsis-h").addClass("fa-check");
@@ -424,6 +417,10 @@ var app = {
 			data.message = (data.message).replace(/\\"/g,'"');
 			data.message = (data.message).replace(/\\'/g,"'");
 		}
+		if( (data.message).indexOf("onclick") > -1 ){
+			data.message = (data.message).replace(/\\"/g,'"');
+			data.message = (data.message).replace(/\\'/g,"'");
+		}
 		//*/
 		var template = Handlebars.compile(source);
 		var result = template(data);
@@ -441,8 +438,11 @@ var app = {
 		if( mensaje == null ){
 			mensaje = "";
 		}
+		console.log(mensaje);
 		if( (mensaje).indexOf("<img") > -1 ){
 			data.mensaje = "<span style='font-family:FontAwesome;'>&#xf030;</span> Imagen";
+		}else if( (mensaje).indexOf("fa fa-download") > -1 ){
+			data.mensaje = "<span style='font-family:FontAwesome;'>&#xf15b;</span> Archivo";
 		} else {
 			if( typeof mensaje!== 'undefined' && mensaje!=null ){
 				if( typeof data.lastusuario === 'undefined' || data.lastusuario==null ){
@@ -1127,7 +1127,7 @@ var app = {
 				},
 				{
 					id:'sacar-foto',
-					text:'Adjuntar Foto'
+					text:'Adjuntar Archivo'
 				}
 			];
 			if( !silenciado ){
@@ -1178,6 +1178,7 @@ var app = {
 		$("#select-source a").on("click",function(){
 			$("#select-source").hide(1000);
 			var action = parseInt($(this).attr("data-ref"));
+			var image = true;
 			switch( action ){
 				case 1:
 					var source = Camera.PictureSourceType.PHOTOLIBRARY;
@@ -1187,73 +1188,45 @@ var app = {
 					var source = Camera.PictureSourceType.CAMERA;
 					var destination = Camera.DestinationType.NATIVE_URI;
 					break;
+				case 3:
+					image = false;
+					break;
 			}
-			navigator.camera.getPicture(onSuccess, onFail, { 
-				quality			: 50,
-				destinationType	: destination,
-				sourceType		: source,
-				correctOrientation:true,
-				saveToPhotoAlbum:true/*,
-				allowEdit		: true */
-			});
+			if( image ){
+				navigator.camera.getPicture(onSuccess, onFail, { 
+					quality			: 50,
+					destinationType	: destination,
+					sourceType		: source,
+					correctOrientation:true,
+					saveToPhotoAlbum:true/*,
+					allowEdit		: true */
+				});
+			} else {
+				$("#fileBrowser").show();
+				browseFileSystem();
+			}
 			function onSuccess(imageURI) {
 				
-				console.log(imageURI);
 				
 				var options = new FileUploadOptions();
 				options.fileKey="file";
 				options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
-				options.mimeType="image/jpeg";
-
-				/*
-				var params = new Object();
-				params.value1 = "test";
-				params.value2 = "param";
-
-				options.params = params;
-				*/
-				options.chunkedMode = false;
-
-				var ft = new FileTransfer();
-				navigator.notification.activityStart("Enviando","Enviando foto...");
-				ft.upload(imageURI, "http://didactica.pablogarin.cl/mobile/upload.php", win, fail, options);
-				function win(resp){
-					if( (resp.response).indexOf('Error') > -1 ){
-						navigator.notification.alert("Error",null,"El formato de archivo es inválido.");
-					}
-					var message = resp.response;
-					if( message.length>0 || message!='' ){
-						var dt = new Date();
-						var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
-						var postData = {
-							remitente:user,
-							chat:chat,
-							message:message,
-							fecha:fecha
-						};
-						$.ajax({
-							url:url+"/gcm/send.php?push=true",
-							data:postData,
-							type:'POST',
-							dataType:'json',
-							success:function(resp){
-								$("#inp-message").val("");
-								resp.data.class = "fa fa-ellipsis-h";
-								app.addMessage(resp.data);
-								navigator.notification.activityStop();
-							},
-							error: function(resp,error){
-								console.log(JSON.stringify(resp));
-								console.log(error);
-								navigator.notification.activityStop();
-								navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
-							}
-						});
-					}
-				}
-				function fail(error){
-					navigator.notification.activityStop();
-				}
+				
+				window.resolveLocalFileSystemURL(
+				imageURI,
+				function(fileEntry){
+					fileEntry.file(function(file){
+						options.mimeType = file.type;
+						options.chunkedMode = false;
+						
+						var ft = new FileTransfer();
+						navigator.notification.activityStart("Enviando","Enviando foto...");
+						ft.upload(imageURI, "http://didactica.pablogarin.cl/mobile/upload.php", win, fail, options);
+					});
+				},function(e){
+					console.log("Error abriendo archivo.");
+					console.dir(e);
+				});
 			}
 			function onFail(message) {
 				console.log(message);
@@ -1451,6 +1424,11 @@ function timeSince(date) {
 	//*/
 }
 function backButton(){
+	if( $("#file-browser").css("display")=='block' ){
+		$("#file-browser .body ul#file-list").html("");
+		$("#file-browser").hide();
+		return;
+	}
 	if( $("#ficha-usuario").css("display")==='block' ){
 		$("#ficha-usuario").html("").hide();
 		$(".heading, #chat, #search-group").show();
@@ -1488,18 +1466,17 @@ function textToColor(text){
 	return '#000000';
 }
 function downloadImage(imageURL,fileName){
-	navigator.notification.activityStart("Abrir Imagen","Cargando imagen, por favor espere...");
+	navigator.notification.activityStart("Abrir","Cargando archivo, por favor espere...");
 	var filePath;
 	window.requestFileSystem(
 		LocalFileSystem.PERSISTENT, 
 		0, 
 		function(fileSystem){
 			var directoryEntry = fileSystem.root;
-			directoryEntry.getDirectory("WebClass\ Fotos", { create: true, exclusive: false }, function(){}, function(error){ alert("No se pudo crear la carpeta: "+error); }); 
+			directoryEntry.getDirectory("WebClass", { create: true, exclusive: false }, function(){}, function(error){ alert("No se pudo crear la carpeta: "+error); }); 
 			var rootdir = fileSystem.root;
 			var fp = rootdir.toURL(); 
-			filePath = fp + "WebClass\ Fotos/" +fileName;
-			console.log(filePath);
+			filePath = fp + "WebClass/" +fileName;
 
 			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
 				fileSystem.root.getFile(filePath, { create: false }, fileExists, fileDoesNotExist);
@@ -1541,4 +1518,166 @@ function downloadImage(imageURL,fileName){
 			navigator.notification.activityStop();
 		});
 	}
+}
+function browseFileSystem(folder){
+	$("#file-browser").show();
+	$("#file-browser .header span i.fa").off("click");
+	$("#file-browser .header span i.fa").on("click",function(e){
+		$("#file-browser").hide();
+	});
+	if( typeof folder === 'undefined' ){
+		window.requestFileSystem(
+			LocalFileSystem.PERSISTENT, 
+			0,
+			function(fileSystem){
+				listDirectory(fileSystem.root);
+			},
+			function(e){
+				console.log("Error");
+				console.log(JSON.stringify(e));
+			}
+		);
+	} else {
+		listDirectory(folder);
+	}
+}
+function compare(a,b) {
+  if (a.name < b.name)
+    return -1;
+  if (a.name > b.name)
+    return 1;
+  return 0;
+}
+function listDirectory(entry){
+	var title = entry.fullPath;
+	if( title.length>15 ){
+		title = title.substr(0,15)+"...";
+	}
+	$("#file-browser .header span.title").html(title);
+	var ls = entry.createReader();
+	$("#file-browser .body ul#file-list").html("Cargando...");
+	entry.getParent(
+		function(parentDir){
+			parentDir.name = "..";
+			ls.readEntries(
+				function(entries){
+					var i;
+					var dirs = [parentDir];
+					var files = [];
+					for (i=0; i<entries.length; i++) {
+						var curr = entries[i];
+						if( curr.name.charAt(0)==="." ){
+							continue;
+						}
+						if(curr.isDirectory){
+							dirs.push(curr);
+						} else if(curr.isFile){
+							files.push(curr);
+						} else {
+							console.log(JSON.stringify(curr));
+						}
+					}
+					dirs = dirs.sort(compare);
+					files.sort(compare);
+					$("#file-browser ul#file-list").html("");
+					i = 0;
+					for(i = 0; i<dirs.length; i++){
+						var li = document.createElement("li");
+						var icon = document.createElement("i");
+						icon.className="fa fa-folder-o fa-2x";
+						li.appendChild(icon);
+						li.appendChild(document.createTextNode( "  "+(dirs[i]).name ));
+						li.setAttribute("data-ref",i);
+						$("#file-browser ul#file-list").append(li);
+					}
+					for(i = 0; i<files.length; i++){
+						var li = document.createElement("li");
+						var icon = document.createElement("i");
+						icon.className="fa fa-file-o fa-2x";
+						li.appendChild(icon);
+						li.appendChild(document.createTextNode( "  "+(files[i]).name ));
+						li.setAttribute("data-ref",files[i].nativeURL);
+						$("#file-browser ul#file-list").append(li);
+					}
+					$("#file-browser ul#file-list li").off("click");
+					$("#file-browser ul#file-list li").on("click",function(e){
+						$("#file-browser").hide();
+						if( !isNaN($(this).attr("data-ref")) ){
+							var index = parseInt( $(this).attr("data-ref") );
+							browseFileSystem(dirs[index]);
+						} else {
+							var fileURI = $(this).attr("data-ref");
+							
+							var options = new FileUploadOptions();
+							options.fileKey="file";
+							options.fileName=fileURI.substr(fileURI.lastIndexOf('/')+1);
+							
+							window.resolveLocalFileSystemURL(
+							fileURI,
+							function(fileEntry){
+								fileEntry.file(function(file){
+									options.mimeType = file.type;
+									options.chunkedMode = false;
+									
+									var ft = new FileTransfer();
+									navigator.notification.activityStart("Enviando","Enviando archivo...");
+									ft.upload(fileURI, "http://didactica.pablogarin.cl/mobile/upload.php", win, fail, options);
+								});
+							},function(e){
+								console.log("Error abriendo archivo.");
+								console.dir(e);
+							});
+						}
+					});
+				},
+				function(e){
+					console.log("Error");
+					console.log(JOSN.strongofy(e));
+				}
+			);
+		},
+		function(e){
+			console.log("Error");
+			console.log(JSON.stringify(e));
+		}
+	);
+}
+function win(resp){
+	console.log(JSON.stringify(resp));
+	if( (resp.response).indexOf('Error') > -1 ){
+		navigator.notification.alert("El archivo no se pudo enviar. Asegurese de que el formato es el correcto y que no supere los 8MB de tamaño.",null,"Error");
+		return;
+	}
+	var message = resp.response;
+	if( message.length>0 || message!='' ){
+		var dt = new Date();
+		var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
+		var postData = {
+			remitente:user,
+			chat:chat,
+			message:message,
+			fecha:fecha
+		};
+		$.ajax({
+			url:url+"/gcm/send.php?push=true",
+			data:postData,
+			type:'POST',
+			dataType:'json',
+			success:function(resp){
+				$("#inp-message").val("");
+				resp.data.class = "fa fa-ellipsis-h";
+				app.addMessage(resp.data);
+				navigator.notification.activityStop();
+			},
+			error: function(resp,error){
+				console.log(JSON.stringify(resp));
+				console.log(error);
+				navigator.notification.activityStop();
+				navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
+			}
+		});
+	}
+}
+function fail(error){
+	navigator.notification.activityStop();
 }

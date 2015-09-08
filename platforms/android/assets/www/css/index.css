@@ -682,7 +682,7 @@ strong.display-name{
 	z-index:300
 }
 #select-source a{
-	width:50%;
+	width:33.333%;
 	float:left;
 	text-align:center;
 	padding:10px;
@@ -706,4 +706,59 @@ strong.display-name{
 #select-source a span{
 	color:#555;
 }
-
+#file-browser{
+	position:fixed;
+	top:5%;
+	height:90%;
+	left:5%;
+	width:90%;
+	background:#fff;
+	color:#000;
+	border:1px solid black;
+	z-index:10000;
+}
+#file-browser .header{
+	font-size:24px;
+	line-height:1.3em;
+	background:#5a7fe0;
+	color:#fff;
+	font-weight:bolder;
+	text-align:center;
+	width:100%;
+	padding:10px;
+	border-bottom:1px solid black;
+}
+#file-browser .header span{
+	/*font-size:14px;*/
+}
+#file-browser .body{
+	width:100%;
+	height:90%;
+	padding:10px;
+}
+#file-browser .body ul#file-list{
+	list-style-type:none;
+	padding:0;
+	margin:0;
+	height:100%;
+	width:100%;
+	overflow-X:hidden;
+	overflow-Y:scroll;
+    font-family: FontAwesome, Helvetica;
+}
+#file-browser .body ul#file-list li{
+	font-size:16px;
+	line-height:1.4em;
+	font-weight:bolder;
+	text-align:middle;
+	width:100%;
+	overflow-X:hidden;
+}
+.file-download{
+	line-height:1.2em;
+	border:1px solid #777;
+	border-radius:5px;
+	background:#ffffcc;
+	padding:15px;
+	text-align:center;
+}
