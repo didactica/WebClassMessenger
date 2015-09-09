@@ -1105,10 +1105,10 @@ var app = {
 		if( chat==null ){
 			if( tab=='grupos' ){
 				var menu = [
-					/*{
+					{
 						id:'crear-grupo',
 						text:'Crear Nuevo Grupo'
-					}*/
+					}
 				]
 			} else {
 				var menu = [];
@@ -1172,7 +1172,18 @@ var app = {
 		$("#sacar-foto").off("click");
 		$("#sacar-foto").on("click",function(e){
 			//TODO: MAKE THE SOURCE OF PHOTO SELECTABLE
-			$("#select-source").show('slow');
+			$("#select-source a").hide();
+			$("#select-source").show('slow').promise().done(function(){
+				$("#select-source a").fadeIn();
+			});
+			/*
+			$(window).on("click.select-source",function(e){
+				if( e.target.id != "select-source" ){
+					$("#select-source").hide();
+					$(window).off("click.select-source");
+				}
+			});
+			*/
 		});
 		$("#select-source a").off("click");
 		$("#select-source a").on("click",function(){
@@ -1206,8 +1217,6 @@ var app = {
 				browseFileSystem();
 			}
 			function onSuccess(imageURI) {
-				
-				
 				var options = new FileUploadOptions();
 				options.fileKey="file";
 				options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
@@ -1270,6 +1279,10 @@ var app = {
 					['No','Si']
 				);
 			}
+		});
+		$("#crear-grupo").off("click");
+		$("#crear-grupo").on("click",function(e){
+			crearGrupo();
 		});
 		$("#btn-logout").off("click");
 		$("#btn-logout").on("click",function(e){
@@ -1424,7 +1437,11 @@ function timeSince(date) {
 	//*/
 }
 function backButton(){
-	if( $("#file-browser").css("display")=='block' ){
+	if( $("#select-source").css("display") == 'block' ){
+		$("#select-source").hide();
+		return;
+	}
+	if( $("#file-browser").css("display") == 'block' ){
 		$("#file-browser .body ul#file-list").html("");
 		$("#file-browser").hide();
 		return;
@@ -1521,8 +1538,8 @@ function downloadImage(imageURL,fileName){
 }
 function browseFileSystem(folder){
 	$("#file-browser").show();
-	$("#file-browser .header span i.fa").off("click");
-	$("#file-browser .header span i.fa").on("click",function(e){
+	$("#close-file-browser").off("click");
+	$("#close-file-browser").on("click",function(e){
 		$("#file-browser").hide();
 	});
 	if( typeof folder === 'undefined' ){
@@ -1550,9 +1567,11 @@ function compare(a,b) {
 }
 function listDirectory(entry){
 	var title = entry.fullPath;
+	/*
 	if( title.length>15 ){
 		title = title.substr(0,15)+"...";
 	}
+	//*/
 	$("#file-browser .header span.title").html(title);
 	var ls = entry.createReader();
 	$("#file-browser .body ul#file-list").html("Cargando...");
@@ -1607,32 +1626,41 @@ function listDirectory(entry){
 							browseFileSystem(dirs[index]);
 						} else {
 							var fileURI = $(this).attr("data-ref");
-							
-							var options = new FileUploadOptions();
-							options.fileKey="file";
-							options.fileName=fileURI.substr(fileURI.lastIndexOf('/')+1);
-							
-							window.resolveLocalFileSystemURL(
-							fileURI,
-							function(fileEntry){
-								fileEntry.file(function(file){
-									options.mimeType = file.type;
-									options.chunkedMode = false;
-									
-									var ft = new FileTransfer();
-									navigator.notification.activityStart("Enviando","Enviando archivo...");
-									ft.upload(fileURI, "http://didactica.pablogarin.cl/mobile/upload.php", win, fail, options);
-								});
-							},function(e){
-								console.log("Error abriendo archivo.");
-								console.dir(e);
-							});
+							var	fileName = decodeURIComponent(fileURI.substr(fileURI.lastIndexOf('/')+1));
+							navigator.notification.confirm(
+								"¿Enviar archivo '"+fileName+"'?",
+								function(buttonIndex){
+									if( buttonIndex==1 ){
+										var options = new FileUploadOptions();
+										options.fileKey="file";
+										options.fileName=fileName;
+										
+										window.resolveLocalFileSystemURL(
+										fileURI,
+										function(fileEntry){
+											fileEntry.file(function(file){
+												options.mimeType = file.type;
+												options.chunkedMode = false;
+												
+												var ft = new FileTransfer();
+												navigator.notification.activityStart("Enviando","Enviando archivo...");
+												ft.upload(fileURI, "http://didactica.pablogarin.cl/mobile/upload.php", win, fail, options);
+											});
+										},function(e){
+											console.log("Error abriendo archivo.");
+											console.dir(e);
+										});
+									}
+								},
+								"Enviar Archivo",
+								"Si,No"
+							);
 						}
 					});
 				},
 				function(e){
 					console.log("Error");
-					console.log(JOSN.strongofy(e));
+					console.log(JSON.strongofy(e));
 				}
 			);
 		},
@@ -1643,41 +1671,215 @@ function listDirectory(entry){
 	);
 }
 function win(resp){
-	console.log(JSON.stringify(resp));
+	//console.log(JSON.stringify(resp));
+	/*
 	if( (resp.response).indexOf('Error') > -1 ){
 		navigator.notification.alert("El archivo no se pudo enviar. Asegurese de que el formato es el correcto y que no supere los 8MB de tamaño.",null,"Error");
 		return;
 	}
-	var message = resp.response;
-	if( message.length>0 || message!='' ){
-		var dt = new Date();
-		var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
-		var postData = {
-			remitente:user,
-			chat:chat,
-			message:message,
-			fecha:fecha
-		};
-		$.ajax({
-			url:url+"/gcm/send.php?push=true",
-			data:postData,
-			type:'POST',
-			dataType:'json',
-			success:function(resp){
-				$("#inp-message").val("");
-				resp.data.class = "fa fa-ellipsis-h";
-				app.addMessage(resp.data);
-				navigator.notification.activityStop();
-			},
-			error: function(resp,error){
-				console.log(JSON.stringify(resp));
-				console.log(error);
-				navigator.notification.activityStop();
-				navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
-			}
-		});
+	//*/
+	resp.response = JSON.parse(resp.response);
+	if( typeof (resp.response.error) === 'undefined' ){
+		console.log(JSON.stringify(resp));
+		resp.response.error = true;
+		resp.response.message = "Ocurrió un error inesperado durante el envío.";
+	}
+	if( resp.response.error ){
+		if( typeof (resp.response.message) === 'undefined' ){
+			console.log(JSON.stringify(resp));
+			resp.response.message = "Ocurrió un error inesperado durante el envío.";
+		}
+		navigator.notification.alert(resp.response.message,null,"Error","Aceptar");
+	} else {
+		var message = resp.response.message;
+		if( message.length>0 || message!='' ){
+			var dt = new Date();
+			var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
+			var postData = {
+				remitente:user,
+				chat:chat,
+				message:message,
+				fecha:fecha
+			};
+			$.ajax({
+				url:url+"/gcm/send.php?push=true",
+				data:postData,
+				type:'POST',
+				dataType:'json',
+				success:function(resp){
+					$("#inp-message").val("");
+					resp.data.class = "fa fa-ellipsis-h";
+					app.addMessage(resp.data);
+					navigator.notification.activityStop();
+				},
+				error: function(resp,error){
+					console.log(JSON.stringify(resp));
+					console.log(error);
+					navigator.notification.activityStop();
+					navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
+				}
+			});
+		}
 	}
 }
 function fail(error){
 	navigator.notification.activityStop();
+}
+function crearGrupo(){
+	var gName;
+	var imageURI;
+	var users = [user]; // this user NEEDS to be in the group
+	setName();
+	function setName(){
+		navigator.notification.prompt(
+			"Ingrese el nombre del grupo", 
+			function(results){
+				if( results.buttonIndex==1 ){
+					gName = results.input1;
+					if( gName.length==0 || gName=='Ej.: Alumnos 4ºB' || gName == '' ){
+						setName();
+					} else {
+						queryForImage();
+					}
+				}
+			}, 
+			"Crear Grupo", 
+			["Aceptar","Cancelar"], 
+			"Ej.: Alumnos 4ºB"
+		);
+	}
+	function queryForImage(){
+		navigator.notification.confirm("¿Desea agregar una imagen a éste grupo?",addImage,"Imagen",["Si","No"]);
+	}
+	function addImage(buttonIndex){
+		if( buttonIndex==1 ){
+			var source = Camera.PictureSourceType.PHOTOLIBRARY;
+			var destination = Camera.DestinationType.NATIVE_URI;
+			navigator.camera.getPicture(onSuccess, onFail, { 
+				quality			: 50,
+				destinationType	: destination,
+				sourceType		: source,
+				correctOrientation:true,
+				saveToPhotoAlbum:true/*,
+				allowEdit		: true */
+			});
+		} else {
+			addUsers();
+		}
+		function onSuccess(res){
+			imageURI = res;
+			addUsers();
+		}
+		function onFail(error){
+			addUsers();
+			console.log("User probably pressed back button");
+			console.log(error);
+		}
+	}
+	function addUsers(){
+		sql.transaction(
+			function(tx){
+				// CALLBACK
+				tx.executeSql(
+					"SELECT * FROM contacto",
+					[],
+					function(tx,resultSet){
+						$("#select-users ul#user-list").html("");
+						for(var i=0; i<resultSet.rows.length; i++){
+							var currObj = resultSet.rows.item(i);
+							if( currObj.idusuario==user ){
+								continue;
+							}
+							var li = document.createElement("li");
+							li.setAttribute("data-ref",currObj.idusuario);
+							li.appendChild(document.createTextNode(currObj.apellido+", "+currObj.nombre));
+							$("#select-users ul#user-list").append(li);
+							console.log(JSON.stringify(currObj));
+						}
+					},
+					function(tx,error){
+						console.log("----------------- ERROR ---------------");
+						console.log(JSON.stringify(error));
+						console.log("---------------------------------------");
+					}
+				);
+			},
+			function(tx,error){
+				//ERROR
+			},
+			function(){
+				//SUCCESS
+				$("#select-users").show().promise().done(function(){
+					$("#select-users .big-prompt-container").show("scale",{}, 100);
+				});
+				$("#select-users ul#user-list li").off("click");
+				$("#select-users ul#user-list li").on("click",function(e){
+					var userId = $(this).attr("data-ref");
+					if( $(this).hasClass("added") ){
+						var index = users.indexOf(userId);
+						if (index > -1) {
+							users.splice(index, 1);
+							$(this).removeClass("added");
+						}
+					} else {
+						$(this).addClass("added");
+						users.push(userId);
+					}
+				});
+				$("#select-users #done").off("click");
+				$("#select-users #done").on("click",function(e){
+					createGroup();
+				});
+			}
+		);
+	}
+	function createGroup(){
+		var testURL = "http://didactica.pablogarin.cl/mobile/crear-grupo.php";
+		var params = {
+			nombre		: gName,
+			users		: users,
+			user		: user
+		};
+		if( typeof imageURI === 'undefined' ){
+			$.ajax({
+				url			: testURL,
+				data		: params,
+				dataType	: 'json',
+				contentType	: 'application/json; charset=utf-8',
+				success		: function( resp ){
+					console.log(JSON.stringify(resp));
+				},
+				error		: function( error ){
+					console.log(JSON.stringify(error));
+				}
+			});
+		} else {
+			var options = new FileUploadOptions();
+			options.fileKey="file";
+			options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
+			options.params = params;
+			
+			window.resolveLocalFileSystemURL(
+				imageURI,
+				function(fileEntry){
+					fileEntry.file(function(file){
+						options.mimeType = file.type;
+						options.chunkedMode = false;
+						
+						console.log(JSON.stringify(options));
+						
+						//*
+						var ft = new FileTransfer();
+						navigator.notification.activityStart("Enviando","Enviando foto...");
+						ft.upload(imageURI, testURL, win, fail, options);
+						//*/
+					});
+				},function(e){
+					console.log("Error abriendo archivo.");
+					console.dir(e);
+				}
+			);
+		}
+		$("#select-users").hide();
+	}
 }

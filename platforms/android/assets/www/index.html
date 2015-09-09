@@ -9,6 +9,7 @@
         <!-- <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" /> -->
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <link rel="stylesheet" href="css/font-awesome.min.css" />
+        <link rel="stylesheet" href="jquery-ui/jquery-ui.min.css" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
         <title>WebClass Messenger</title>
@@ -122,13 +123,36 @@
 			</div>
 			<!-- row -->
 		</div>
-		<div id="file-browser" class="collapse">
-			<div class="header"><span class="title">Abrir Archivo</span><span><i class="fa fa-times pull-right"></i></span></div>
-			<div class="body">
-				<ul id="file-list">
-				</ul>
+		<!-- file browser -->
+		<div id="file-browser" class="big-prompt collapse">
+			<div class="big-prompt-container">
+				<div class="header"><span class="title">Abrir Archivo</span></div>
+				<div class="body">
+					<ul id="file-list" class="nav nav-list">
+						<!-- all folders and files to be added here -->
+					</ul>
+				</div>
+				<div class="spacer"></div>
+				<div id="close-file-browser" class="actionButton">Cancelar</div>
 			</div>
 		</div>
+		<!-- file browser -->
+		<!-- user select -->
+		<div id="select-users" class="big-prompt collapse">
+			<div class="big-prompt-container collapse">
+				<div class="header">
+					<span class="title">Seleccionar Usuarios</span>
+				</div>
+				<div class="body">
+					<ul id="user-list" class="nav nav-list">
+						<!-- all users to be added here -->
+					</ul>
+				</div>
+				<div class="spacer"></div>
+				<div id="done">Continuar</div>
+			</div>
+		</div>
+		<!-- user select -->
 		<script id="outgoing-chat" type="text/html">
 			<li class="right clearfix panel">
 				<div class="chat-body clearfix">
@@ -237,9 +261,10 @@
 				</div>
 			</div>
 		</script>
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="js/PushNotification.js"></script>
         <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
+		<script type="text/javascript" src="jquery-ui/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="js/PushNotification.js"></script>
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
         <script type="text/javascript" src="js/handlebars.js"></script>
 		<script type="text/javascript" src="js/contacto.js"></script>

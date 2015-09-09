@@ -1172,10 +1172,7 @@ var app = {
 		$("#sacar-foto").off("click");
 		$("#sacar-foto").on("click",function(e){
 			//TODO: MAKE THE SOURCE OF PHOTO SELECTABLE
-			$("#select-source a").hide();
-			$("#select-source").show('slow').promise().done(function(){
-				$("#select-source a").fadeIn();
-			});
+			$("#select-source").show('slow');
 			/*
 			$(window).on("click.select-source",function(e){
 				if( e.target.id != "select-source" ){
@@ -1538,8 +1535,8 @@ function downloadImage(imageURL,fileName){
 }
 function browseFileSystem(folder){
 	$("#file-browser").show();
-	$("#close-file-browser").off("click");
-	$("#close-file-browser").on("click",function(e){
+	$("#file-browser .header span i.fa").off("click");
+	$("#file-browser .header span i.fa").on("click",function(e){
 		$("#file-browser").hide();
 	});
 	if( typeof folder === 'undefined' ){
@@ -1567,11 +1564,9 @@ function compare(a,b) {
 }
 function listDirectory(entry){
 	var title = entry.fullPath;
-	/*
 	if( title.length>15 ){
 		title = title.substr(0,15)+"...";
 	}
-	//*/
 	$("#file-browser .header span.title").html(title);
 	var ls = entry.createReader();
 	$("#file-browser .body ul#file-list").html("Cargando...");
@@ -1660,7 +1655,7 @@ function listDirectory(entry){
 				},
 				function(e){
 					console.log("Error");
-					console.log(JSON.strongofy(e));
+					console.log(JOSN.strongofy(e));
 				}
 			);
 		},
@@ -1728,26 +1723,19 @@ function fail(error){
 function crearGrupo(){
 	var gName;
 	var imageURI;
-	var users = [user]; // this user NEEDS to be in the group
-	setName();
-	function setName(){
-		navigator.notification.prompt(
-			"Ingrese el nombre del grupo", 
-			function(results){
-				if( results.buttonIndex==1 ){
-					gName = results.input1;
-					if( gName.length==0 || gName=='Ej.: Alumnos 4ºB' || gName == '' ){
-						setName();
-					} else {
-						queryForImage();
-					}
-				}
-			}, 
-			"Crear Grupo", 
-			["Aceptar","Cancelar"], 
-			"Ej.: Alumnos 4ºB"
-		);
-	}
+	var users = [];
+	navigator.notification.prompt(
+		"Ingrese el nombre del grupo", 
+		function(results){
+			if( results.buttonIndex==1 ){
+				gName = results.input1;
+				queryForImage();
+			}
+		}, 
+		"Crear Grupo", 
+		["Aceptar","Cancelar"], 
+		"Ej.: Alumnos 4ºB"
+	);
 	function queryForImage(){
 		navigator.notification.confirm("¿Desea agregar una imagen a éste grupo?",addImage,"Imagen",["Si","No"]);
 	}
@@ -1777,109 +1765,36 @@ function crearGrupo(){
 		}
 	}
 	function addUsers(){
-		sql.transaction(
-			function(tx){
-				// CALLBACK
-				tx.executeSql(
-					"SELECT * FROM contacto",
-					[],
-					function(tx,resultSet){
-						$("#select-users ul#user-list").html("");
-						for(var i=0; i<resultSet.rows.length; i++){
-							var currObj = resultSet.rows.item(i);
-							if( currObj.idusuario==user ){
-								continue;
-							}
-							var li = document.createElement("li");
-							li.setAttribute("data-ref",currObj.idusuario);
-							li.appendChild(document.createTextNode(currObj.apellido+", "+currObj.nombre));
-							$("#select-users ul#user-list").append(li);
-							console.log(JSON.stringify(currObj));
-						}
-					},
-					function(tx,error){
-						console.log("----------------- ERROR ---------------");
-						console.log(JSON.stringify(error));
-						console.log("---------------------------------------");
-					}
-				);
-			},
-			function(tx,error){
-				//ERROR
-			},
-			function(){
-				//SUCCESS
-				$("#select-users").show().promise().done(function(){
-					$("#select-users .big-prompt-container").show("scale",{}, 100);
-				});
-				$("#select-users ul#user-list li").off("click");
-				$("#select-users ul#user-list li").on("click",function(e){
-					var userId = $(this).attr("data-ref");
-					if( $(this).hasClass("added") ){
-						var index = users.indexOf(userId);
-						if (index > -1) {
-							users.splice(index, 1);
-							$(this).removeClass("added");
-						}
-					} else {
-						$(this).addClass("added");
-						users.push(userId);
-					}
-				});
-				$("#select-users #done").off("click");
-				$("#select-users #done").on("click",function(e){
-					createGroup();
-				});
+		$("#select-users").show('slow');
+		//TODO: list all users and add them on the GUI <-- block UI!!!!
+		$("#select-users ul#user-list li").off("click");
+		$("#select-users ul#user-list li").on("click",function(e){
+			var userId = $(this).attr("data-ref");
+			if( $(this).hasClass("added") ){
+				var index = users.indexOf(userId);
+				if (index > -1) {
+					users = users.splice(index, 1);
+					$(this).removeClass("added");
+				}
+			} else {
+				$(this).addClass("added");
+				users.push(userId);
 			}
-		);
+		});
+		$("#select-users #done").off("click");
+		$("#select-users #done").on("click",function(e){
+			createGroup();
+		}
 	}
 	function createGroup(){
-		var testURL = "http://didactica.pablogarin.cl/mobile/crear-grupo.php";
-		var params = {
-			nombre		: gName,
-			users		: users,
-			user		: user
-		};
 		if( typeof imageURI === 'undefined' ){
-			$.ajax({
-				url			: testURL,
-				data		: params,
-				dataType	: 'json',
-				contentType	: 'application/json; charset=utf-8',
-				success		: function( resp ){
-					console.log(JSON.stringify(resp));
-				},
-				error		: function( error ){
-					console.log(JSON.stringify(error));
-				}
-			});
+			console.log("Name  : "+gName);
+			console.log("Image : none");
+			console.log("Users : "+JSON.stringify(users));
 		} else {
-			var options = new FileUploadOptions();
-			options.fileKey="file";
-			options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
-			options.params = params;
-			
-			window.resolveLocalFileSystemURL(
-				imageURI,
-				function(fileEntry){
-					fileEntry.file(function(file){
-						options.mimeType = file.type;
-						options.chunkedMode = false;
-						
-						console.log(JSON.stringify(options));
-						
-						//*
-						var ft = new FileTransfer();
-						navigator.notification.activityStart("Enviando","Enviando foto...");
-						ft.upload(imageURI, testURL, win, fail, options);
-						//*/
-					});
-				},function(e){
-					console.log("Error abriendo archivo.");
-					console.dir(e);
-				}
-			);
+			console.log("Name  : "+gName);
+			console.log("Image : "+imageURI);
+			console.log("Users : "+JSON.stringify(users));
 		}
-		$("#select-users").hide();
 	}
 }
