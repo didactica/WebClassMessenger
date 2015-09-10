@@ -844,6 +844,10 @@ strong.display-name{
 	font-size:22px;
 	font-weight:bolder;
 }
+#ficha-usuario .grupo a:last-child{
+	border-bottom:none;
+}
 #ficha-usuario .usuario .detalle p{
 	line-height:56px;
 }
+

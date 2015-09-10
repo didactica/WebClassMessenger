@@ -1083,15 +1083,12 @@ var app = {
 						"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
 						[user,chat],
 						function(tx,result){
-							var asd = "Fuera";
 							if( result.rows!=null && result.rows.length>0 ){
 								$("#ficha-usuario").html("").hide();
 								$(".heading, #chat, #search-group").show();
 								var tObj = result.rows.item(0);
 								silenciado = tObj.silenciado==1;
-								var asd = "Dentro";
 							}
-							console.log(asd);
 							app.initializeUser();
 						},
 						function(tx,error){
@@ -1770,7 +1767,7 @@ function listDirectory(entry){
 	);
 }
 function win(resp){
-	console.log(JSON.stringify(resp));
+	// console.log(JSON.stringify(resp));
 	/*
 	if( (resp.response).indexOf('Error') > -1 ){
 		navigator.notification.alert("El archivo no se pudo enviar. Asegurese de que el formato es el correcto y que no supere los 8MB de tamaño.",null,"Error");
@@ -1945,7 +1942,7 @@ function crearGrupo(){
 				dataType	: 'json',
 				contentType	: 'application/json; charset=utf-8',
 				success		: function( resp ){
-					console.log(JSON.stringify(resp));
+					// console.log(JSON.stringify(resp));
 				},
 				error		: function( error ){
 					console.log(JSON.stringify(error));
@@ -1971,7 +1968,7 @@ function crearGrupo(){
 							imageURI, 
 							testURL, 
 							function(result){
-								console.log(JSON.stringify(result));
+								// console.log(JSON.stringify(result));
 								app.populateUsers();
 							}, 
 							fail, 
@@ -1986,6 +1983,15 @@ function crearGrupo(){
 			);
 		}
 		$("#select-users").hide();
+	}
+}
+function updateGrupo(chat){
+	if( typeof data === 'object' ){
+		//TODO: send data for update to group
+	} else if( typeof data === 'string' || typeof data === 'number' ){
+		//TODO: this is to be seen...
+	} else {
+		console.log("Nada que hacer acá");
 	}
 }
 function verUsuario(usuario){
