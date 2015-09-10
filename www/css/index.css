@@ -838,3 +838,12 @@ strong.display-name{
 #select-users .body ul li.added{
 	background:#ccc;
 }
+#btn-salir-grupo{
+	width:96%;
+	margin:10px 2% 20px;
+	font-size:22px;
+	font-weight:bolder;
+}
+#ficha-usuario .usuario .detalle p{
+	line-height:56px;
+}

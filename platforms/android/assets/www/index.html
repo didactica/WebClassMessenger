@@ -261,6 +261,52 @@
 				</div>
 			</div>
 		</script>
+		<script id="ficha-grupo-template" type="text/html">
+			<div id="back-ficha-usuario" onclick="backButton(); return false;">
+				<span><i class="fa fa-angle-left fa-2x"></i></span>
+			</div>
+			<div class="banner-usuario" style="background-color:rgb(22,128,202); background-size:100%;">
+				<span class="nombre-usuario">{{nombre}}</span>
+			</div>
+			<div class="banner-usuario bg" style="background-image:url({{foto}});">
+				<span class="nombre-usuario">{{nombre}}</span>
+			</div>
+			<div class="detalles-ficha-usuario">
+				<div class="panel clearfix">
+					<div class="content">
+						<p style="padding:1em; text-align:center;">
+							<strong style="font-size:1.5em;">{{nombre}}</strong><br/>
+							<span class="muted">Grupo</span>
+						</p>
+					</div>
+				</div>
+				<div class="panel clearfix">
+					<h5>Usuarios</h5>
+					<hr/>
+					<div class="content">
+					{{#if usuarios}}
+						{{#each usuariosArray}}
+						<div class="grupo">
+							<a href="#" class="usuario clearfix" onclick="app.openChat({{idusuario}}); return false;">
+								<div class="foto-usuario">
+									<img src="{{display_image}}">
+								</div>
+								<div class="detalle">
+									<p>
+										<strong class="display-name">{{display_name}}</strong>
+									</p>
+								</div>
+							</a>
+						</div>
+						{{/each}}
+					{{else}}
+						<strong>No hay usuarios</strong>
+					{{/if}}
+					</div>
+				</div>
+			</div>
+			<button id="btn-salir-grupo" class="btn btn-danger" onclick="salirGrupo(); return false;">Abandonar Grupo</button>
+		</script>
         <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
 		<script type="text/javascript" src="jquery-ui/jquery-ui.min.js"></script>

@@ -14,6 +14,7 @@ var silenciado = false;
 var bannerUsuarioHeight = {};
 var limitOffset = 0;
 var push;
+var userData;
 
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
 $("#tabs-usuarios li, #tabs-usuarios a").on("click",function(e){
@@ -438,7 +439,6 @@ var app = {
 		if( mensaje == null ){
 			mensaje = "";
 		}
-		console.log(mensaje);
 		if( (mensaje).indexOf("<img") > -1 ){
 			data.mensaje = "<span style='font-family:FontAwesome;'>&#xf030;</span> Imagen";
 		}else if( (mensaje).indexOf("fa fa-download") > -1 ){
@@ -651,6 +651,7 @@ var app = {
 			case 'grupos':
 				var c = new Chat();
 				c.select(sql,filtroUsuario,true,function(contactos){
+					app.contactos = contactos;
 					$("#lista-usuarios").html("");
 					if( contactos.length>0 ){
 						for( var id in contactos ){
@@ -701,32 +702,8 @@ var app = {
 					navigator.notification.activityStop();
 					$(".usuario").off("click");
 					$(".usuario").on("click",function(e){
-						$("#chat-window").html("");
-						e.preventDefault();
 						var contacto = $(this).attr("data-rel");
-						var cct = new ChatContacto();
-						limitOffset = 0;
-						cct.select(sql,contacto,function(resChat){
-							chat = resChat;
-							sql.transaction(
-								function(tx){
-									tx.executeSql(
-										"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
-										[user,chat],
-										function(tx,result){
-											if( result.rows!=null && result.rows.length>0 ){
-												var tObj = result.rows.item(0);
-												silenciado = tObj.silenciado==1;
-											}
-											app.initializeUser();
-										},
-										function(tx,error){
-											app.initializeUser();
-										}
-									);
-								}
-							);
-						});
+						app.openChat(contacto);
 					});
 				});
 				break;
@@ -1092,6 +1069,44 @@ var app = {
 			tDom.html("&nbsp;WebClass");
 		}
 	},
+	openChat: function(contacto){
+		navigator.notification.activityStart("Cargando","Cargando Chat...");
+		$("#chat-window").html("");
+		var cct = new ChatContacto();
+		limitOffset = 0;
+		cct.select(sql,contacto,function(resChat){
+			tab = 'chats';
+			chat = resChat;
+			sql.transaction(
+				function(tx){
+					tx.executeSql(
+						"SELECT silenciado FROM chat_contacto WHERE contacto=? and chat=?",
+						[user,chat],
+						function(tx,result){
+							var asd = "Fuera";
+							if( result.rows!=null && result.rows.length>0 ){
+								$("#ficha-usuario").html("").hide();
+								$(".heading, #chat, #search-group").show();
+								var tObj = result.rows.item(0);
+								silenciado = tObj.silenciado==1;
+								var asd = "Dentro";
+							}
+							console.log(asd);
+							app.initializeUser();
+						},
+						function(tx,error){
+							app.initializeUser();
+						}
+					);
+				},
+				null,
+				function(){
+					app.setTitle();
+					navigator.notification.activityStop();
+				}
+			);
+		});
+	},
 	resumeApp: function(){
 		app.downloadMessages(function(){
 			if( chat!=null ){
@@ -1120,16 +1135,35 @@ var app = {
 				}
 			);
 		} else {
-			var menu = [
-				{
-					id:'ver-usuario',
-					text:'Ver Usuario'
-				},
-				{
-					id:'sacar-foto',
-					text:'Adjuntar Archivo'
-				}
-			];
+			var menu = [];
+			if( tab=='grupos' ){
+				//TODO:
+				menu.push(
+					{
+						id:'ver-grupo',
+						text:'Ver Grupo'
+					}
+				);
+				menu.push(
+					{
+						id:'sacar-foto',
+						text:'Adjuntar Archivo'
+					}
+				);
+			} else {
+				menu.push(
+					{
+						id:'ver-usuario',
+						text:'Ver Usuario'
+					}
+				);
+				menu.push(
+					{
+						id:'sacar-foto',
+						text:'Adjuntar Archivo'
+					}
+				);
+			}
 			if( !silenciado ){
 				menu.push(
 					{
@@ -1230,7 +1264,7 @@ var app = {
 						
 						var ft = new FileTransfer();
 						navigator.notification.activityStart("Enviando","Enviando foto...");
-						ft.upload(imageURI, "http://didactica.pablogarin.cl/mobile/upload.php", win, fail, options);
+						ft.upload(imageURI, url+"/gcm/upload.php", win, fail, options);
 					});
 				},function(e){
 					console.log("Error abriendo archivo.");
@@ -1284,6 +1318,29 @@ var app = {
 		$("#crear-grupo").on("click",function(e){
 			crearGrupo();
 		});
+		$("#ver-grupo").off("click");
+		$("#ver-grupo").on("click",function(e){
+			var data;
+			sql.transaction(
+				function(tx){
+					tx.executeSql(
+						"SELECT * FROM chat	WHERE id=?",
+						[chat],
+						function(tx,res){
+							data = res.rows.item(0);
+						}
+					);
+				},
+				function(var1, var2){
+					console.log(var1);
+					console.log(var1);
+				},
+				function(){
+					data.grupo = true;
+					app.verFichaUsuario(data);
+				}
+			);
+		});
 		$("#btn-logout").off("click");
 		$("#btn-logout").on("click",function(e){
 			push.unregister(
@@ -1308,44 +1365,86 @@ var app = {
 		});
 	},
 	verFichaUsuario: function(data){
-		sql.transaction(
-			function(tx){
-				var contacto = data.idusuario;
-				var query = "select id,foto as display_image, nombre as display_name from chat where grupo=1 and id in (select chat from chat_contacto where contacto=?)";
-				tx.executeSql(
-					query,
-					[contacto],
-					function(tx,result){
-						if( (result.rows!=null) && (result.rows.length>0) ){
-							data.grupos = true;
-							data.grupoArray = [];
-							for( var i=0; i<result.rows.length; i++ ){
-								data.grupoArray.push(result.rows.item(i));
+		if( data.grupo ){
+			// TODO: READ USERS AND LIST THEM
+			sql.transaction(
+				function(tx){
+					var contacto = chat;
+					var query = "select idusuario,foto as display_image, nombre as display_name from contacto where idusuario in (select contacto from chat_contacto where chat=?)";
+					tx.executeSql(
+						query,
+						[contacto],
+						function(tx,result){
+							if( (result.rows!=null) && (result.rows.length>0) ){
+								data.usuarios = true;
+								data.usuariosArray = [];
+								for( var i=0; i<result.rows.length; i++ ){
+									data.usuariosArray.push(result.rows.item(i));
+								}
+							} else {
+								data.usuarios = false;
 							}
-						} else {
-							data.grupos = false;
+							var source = $("#ficha-grupo-template").html();
+							var template = Handlebars.compile(source);
+							var view = template(data);
+							$("#ficha-usuario").html("");
+							$("#ficha-usuario").append(view);
+							$(".heading, #chat, #usuarios, #search-group").hide();
+							$("#main-content, #ficha-usuario").show();
+							bannerUsuarioHeight.bg = $(".banner-usuario").height();
+							bannerUsuarioHeight.span = ($(".banner-usuario span").css('font-size')).replace('px','');
+							app.setUserBanner(true);
+							window.addEventListener('scroll', function(e){
+								app.setUserBanner(false);
+							});
+						},
+						function(tx,error){
+							console.log("ATENCION!!!");
+							console.log(JSON.stringify(error));
 						}
-						var source = $("#ficha-usuario-template").html();
-						var template = Handlebars.compile(source);
-						var view = template(data);
-						$("#ficha-usuario").html("");
-						$("#ficha-usuario").append(view);
-						$(".heading, #chat, #usuarios, #search-group").hide();
-						$("#main-content, #ficha-usuario").show();
-						bannerUsuarioHeight.bg = $(".banner-usuario").height();
-						bannerUsuarioHeight.span = ($(".banner-usuario span").css('font-size')).replace('px','');
-						app.setUserBanner(true);
-						window.addEventListener('scroll', function(e){
-							app.setUserBanner(false);
-						});
-					},
-					function(tx,error){
-						console.log("ATENCION!!!");
-						console.log(JSON.stringify(error));
-					}
-				);
-			}
-		);
+					);
+				}
+			);
+		} else {
+			sql.transaction(
+				function(tx){
+					var contacto = data.idusuario;
+					var query = "select id,foto as display_image, nombre as display_name from chat where grupo=1 and id in (select chat from chat_contacto where contacto=?)";
+					tx.executeSql(
+						query,
+						[contacto],
+						function(tx,result){
+							if( (result.rows!=null) && (result.rows.length>0) ){
+								data.grupos = true;
+								data.grupoArray = [];
+								for( var i=0; i<result.rows.length; i++ ){
+									data.grupoArray.push(result.rows.item(i));
+								}
+							} else {
+								data.grupos = false;
+							}
+							var source = $("#ficha-usuario-template").html();
+							var template = Handlebars.compile(source);
+							var view = template(data);
+							$("#ficha-usuario").html("");
+							$("#ficha-usuario").append(view);
+							$(".heading, #chat, #usuarios, #search-group").hide();
+							$("#main-content, #ficha-usuario").show();
+							bannerUsuarioHeight.bg = $(".banner-usuario").height();
+							bannerUsuarioHeight.span = ($(".banner-usuario span").css('font-size')).replace('px','');
+							app.setUserBanner(true);
+							window.addEventListener('scroll', function(e){
+								app.setUserBanner(false);
+							});
+						},
+						function(tx,error){
+							console.log("ATENCION!!!");
+							console.log(JSON.stringify(error));
+						}
+					);
+				}
+			);
+		}
 	},
 	setUserBanner: function(initial){
 		var distanceY = window.pageYOffset || document.documentElement.scrollTop;
@@ -1644,7 +1743,7 @@ function listDirectory(entry){
 												
 												var ft = new FileTransfer();
 												navigator.notification.activityStart("Enviando","Enviando archivo...");
-												ft.upload(fileURI, "http://didactica.pablogarin.cl/mobile/upload.php", win, fail, options);
+												ft.upload(fileURI, url+"/gcm/upload.php", win, fail, options);
 											});
 										},function(e){
 											console.log("Error abriendo archivo.");
@@ -1653,14 +1752,14 @@ function listDirectory(entry){
 									}
 								},
 								"Enviar Archivo",
-								"Si,No"
+								["Si","No"]
 							);
 						}
 					});
 				},
 				function(e){
 					console.log("Error");
-					console.log(JSON.strongofy(e));
+					console.log(JSON.stringify(e));
 				}
 			);
 		},
@@ -1671,7 +1770,7 @@ function listDirectory(entry){
 	);
 }
 function win(resp){
-	//console.log(JSON.stringify(resp));
+	console.log(JSON.stringify(resp));
 	/*
 	if( (resp.response).indexOf('Error') > -1 ){
 		navigator.notification.alert("El archivo no se pudo enviar. Asegurese de que el formato es el correcto y que no supere los 8MB de tamaño.",null,"Error");
@@ -1794,7 +1893,6 @@ function crearGrupo(){
 							li.setAttribute("data-ref",currObj.idusuario);
 							li.appendChild(document.createTextNode(currObj.apellido+", "+currObj.nombre));
 							$("#select-users ul#user-list").append(li);
-							console.log(JSON.stringify(currObj));
 						}
 					},
 					function(tx,error){
@@ -1834,7 +1932,7 @@ function crearGrupo(){
 		);
 	}
 	function createGroup(){
-		var testURL = "http://didactica.pablogarin.cl/mobile/crear-grupo.php";
+		var testURL = url+"/gcm/crear-grupo.php";
 		var params = {
 			nombre		: gName,
 			users		: users,
@@ -1852,7 +1950,7 @@ function crearGrupo(){
 				error		: function( error ){
 					console.log(JSON.stringify(error));
 				}
-			});
+			}).done(app.populateUsers);
 		} else {
 			var options = new FileUploadOptions();
 			options.fileKey="file";
@@ -1866,12 +1964,19 @@ function crearGrupo(){
 						options.mimeType = file.type;
 						options.chunkedMode = false;
 						
-						console.log(JSON.stringify(options));
-						
 						//*
 						var ft = new FileTransfer();
 						navigator.notification.activityStart("Enviando","Enviando foto...");
-						ft.upload(imageURI, testURL, win, fail, options);
+						ft.upload(
+							imageURI, 
+							testURL, 
+							function(result){
+								console.log(JSON.stringify(result));
+								app.populateUsers();
+							}, 
+							fail, 
+							options
+						);
 						//*/
 					});
 				},function(e){
@@ -1882,4 +1987,81 @@ function crearGrupo(){
 		}
 		$("#select-users").hide();
 	}
+}
+function verUsuario(usuario){
+	if( usuario==user ){
+		return;
+	}
+	var data;
+	var query = "select chat from chat_contacto where contacto=? and chat in (select id from chat where grupo=0)";
+	sql.transaction(
+		function(tx){
+			tx.executeSql(
+				query,
+				[usuario],
+				function(tx,resultSet){
+					if( resultSet.rows.length>0 ){
+						data = resultSet.rows.item(0);
+					} else {
+						openChat(usuario);
+					}
+				}
+			);
+		},
+		function(){
+		},
+		function(){
+			if( typeof data !== 'undefined' ){
+				chat = data.chat;
+				tab = 'chats';
+				$("#ficha-usuario").html("").hide();
+				$(".heading, #chat, #search-group").show();
+				app.initializeUser();
+			}
+		}
+	);
+}
+function salirGrupo(){
+	navigator.notification.confirm(
+		"¿Seguro desea salir del grupo?",
+		function(buttonIndex){
+			if( buttonIndex==1 ){
+				$.ajax({
+					url: url+'/gcm/abandonar-grupo.php',
+					data:{usuario:user, chat:chat},
+					contentType:'aplication/json; charset=utf-8',
+					success:function(response){
+						// console.log(JSON.stringify(response));
+						sql.transaction(
+							function(tx){
+								tx.executeSql(
+									"DELETE FROM chat WHERE id=?",
+									[chat],
+									function(tx,resultSet){
+									},
+									function(res,error){
+										console.log(JSON.stringify(error));
+									}
+								);
+							},
+							function(){
+							},
+							function(){
+								chat = null;
+								$("#ficha-usuario").html("").hide();
+								$(".heading, #chat, #search-group").show();
+								app.initializeUser();
+							}
+						);
+					},
+					error:function(response,error){
+						console.log(response);
+						console.log(error);
+					}
+				});
+			}
+		},
+		"Salir",
+		["Si","No"]
+	);
 }
