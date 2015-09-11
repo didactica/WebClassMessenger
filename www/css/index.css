@@ -497,7 +497,20 @@ strong.display-name{
 	padding-right:0px!important;
 }
 #titulo{
+	position:absolute;
+	right:54px;
+	left:10px;
+	display:inline-block;
 	font-size:20px;
+}
+#titulo span.texto{
+	display:inline-block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	position:absolute;
+	left:60px;
+	right:0px;
 }
 #titulo .foto-usuario{
 	background-image:url(../img/user.jpg);

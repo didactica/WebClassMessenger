@@ -1067,7 +1067,10 @@ var app = {
 								imgCont.appendChild(foto);
 								tDom.append(imgCont);
 								tDom.append("</a>");
-								tDom.append(cObj.display_name);
+								var texto = document.createElement('span');
+								texto.className = 'texto';
+								texto.appendChild(document.createTextNode(cObj.display_name));
+								tDom.append(texto);
 							}
 						}
 					});
@@ -1400,7 +1403,9 @@ var app = {
 					"SELECT * FROM chat	WHERE id=?",
 					[chat],
 					function(tx,res){
-						data = res.rows.item(0);
+						if( ( typeof res.rows !== 'undefined' ) && ( res.rows.length>0 ) ){
+							data = res.rows.item(0);
+						}
 					}
 				);
 			},
@@ -1887,11 +1892,66 @@ function crearGrupo(idToEdit){
 		navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 		return;
 	}
+	var data = {};
 	var gName;
 	var imageURI;
 	var users = [user]; // this user NEEDS to be in the group
-	setName();
+	if( typeof idToEdit === 'undefined' ){
+		setName();
+	} else {
+		//TODO: read all the data to prepopulate the modification fields
+		sql.transaction(
+			function(tx){
+				tx.executeSql(
+					"SELECT * FROM chat WHERE id=?",
+					[chat],
+					function(tx,resultSet){
+						if( (typeof resultSet.rows !== 'undefined' ) && (resultSet.rows.length>0) ){
+							data = resultSet.rows.item(0);
+						}
+					},
+					function(tx,error){
+						console.log("------------------------");
+						console.log("Error");
+						console.log(JSON.stringify(error));
+						console.log("------------------------");
+					}
+				);
+				tx.executeSql(
+					"SELECT * FROM chat_contacto WHERE chat=?",
+					[chat],
+					function(tx,resultSet){
+						if( ( typeof resultSet.rows !== 'undefined' ) && (resultSet.rows.length>0) ){
+							var i;
+							data.users = [];
+							for(i=0; i<resultSet.rows.length; i++){
+								data.users.push( (resultSet.rows.item(i)).contacto );
+							}
+						}
+					},
+					function(tx,error){
+						console.log("------------------------");
+						console.log("Error");
+						console.log(JSON.stringify(error));
+						console.log("------------------------");
+					}
+				);
+			},
+			// DIS is error
+			function(){
+			},
+			// and DIS is done
+			function(){
+				console.log(JSON.stringify(data.users));
+				setName();
+			}
+		);
+	}
 	function setName(){
+		var txtName = "Ej.: Alumnos 4ºB";
+		if( typeof idToEdit !== 'undefined' ){
+			txtName = data.nombre;
+		}
 		navigator.notification.prompt(
 			"Ingrese el nombre del grupo", 
 			function(results){
@@ -1906,7 +1966,7 @@ function crearGrupo(idToEdit){
 			}, 
 			"Crear Grupo", 
 			["Aceptar","Cancelar"], 
-			"Ej.: Alumnos 4ºB"
+			txtName
 		);
 	}
 	function queryForImage(){
@@ -1955,6 +2015,9 @@ function crearGrupo(idToEdit){
 							li.setAttribute("data-ref",currObj.idusuario);
 							li.appendChild(document.createTextNode(currObj.apellido+", "+currObj.nombre));
 							$("#select-users ul#user-list").append(li);
+						}
+						if( typeof idToEdit !== 'undefined' ){
+							txtName = data.nombre;
 						}
 					},
 					function(tx,error){
@@ -2019,9 +2082,13 @@ function crearGrupo(idToEdit){
 						console.log(JSON.stringify(error));
 					}
 				}).done(function(){
-					app.downloadUsers(function(){
-						app.verGrupo();
-					});
+					if( typeof idToEdit === 'undefined' ){
+						app.populateUsers();
+					} else {
+						app.downloadUsers(function(){
+							app.verGrupo();
+						});
+					}
 					navigator.notification.activityStop();
 				});
 			} else {
@@ -2048,9 +2115,14 @@ function crearGrupo(idToEdit){
 								imageURI, 
 								testURL, 
 								function(result){
-									app.downloadUsers(function(){
-										app.verGrupo();
-									});
+									if( typeof idToEdit === 'undefined' ){
+										app.populateUsers();
+									} else {
+										app.downloadUsers(function(){
+											app.verGrupo();
+										});
+									}
+									navigator.notification.activityStop();
 								}, 
 								function(response){
 									console.log("Error");

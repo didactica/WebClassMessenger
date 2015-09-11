@@ -14,6 +14,8 @@ var bannerUsuarioHeight = {};
 var limitOffset = 0;
 var push;
 var userData;
+var userList;
+var lastUpdate;
 
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
 $("#tabs-usuarios li, #tabs-usuarios a").on("click",function(e){
@@ -677,7 +679,7 @@ var app = {
 			case 'grupos':
 				var c = new Chat();
 				c.select(sql,filtroUsuario,true,function(contactos){
-					app.contactos = contactos;
+					userList = contactos;
 					$("#lista-usuarios").html("");
 					if( contactos.length>0 ){
 						for( var id in contactos ){
@@ -1065,7 +1067,11 @@ var app = {
 								imgCont.appendChild(foto);
 								tDom.append(imgCont);
 								tDom.append("</a>");
-								tDom.append(cObj.display_name);
+								var texto = document.createElement('span');
+								texto.className = 'texto';
+								texto.appendChild(document.createTextNode(cObj.display_name));
+								tDom.append(texto);
+								//tDom.append(cObj.display_name);
 							}
 						}
 					});
@@ -1398,7 +1404,9 @@ var app = {
 					"SELECT * FROM chat	WHERE id=?",
 					[chat],
 					function(tx,res){
-						data = res.rows.item(0);
+						if( ( typeof res.rows !== 'undefined' ) && ( res.rows.length>0 ) ){
+							data = res.rows.item(0);
+						}
 					}
 				);
 			},
@@ -1885,11 +1893,66 @@ function crearGrupo(idToEdit){
 		navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 		return;
 	}
+	var data = {};
 	var gName;
 	var imageURI;
 	var users = [user]; // this user NEEDS to be in the group
-	setName();
+	if( typeof idToEdit === 'undefined' ){
+		setName();
+	} else {
+		//TODO: read all the data to prepopulate the modification fields
+		sql.transaction(
+			function(tx){
+				tx.executeSql(
+					"SELECT * FROM chat WHERE id=?",
+					[chat],
+					function(tx,resultSet){
+						if( (typeof resultSet.rows !== 'undefined' ) && (resultSet.rows.length>0) ){
+							data = resultSet.rows.item(0);
+						}
+					},
+					function(tx,error){
+						console.log("------------------------");
+						console.log("Error");
+						console.log(JSON.stringify(error));
+						console.log("------------------------");
+					}
+				);
+				tx.executeSql(
+					"SELECT * FROM chat_contacto WHERE chat=?",
+					[chat],
+					function(tx,resultSet){
+						if( ( typeof resultSet.rows !== 'undefined' ) && (resultSet.rows.length>0) ){
+							var i;
+							data.users = [];
+							for(i=0; i<resultSet.rows.length; i++){
+								data.users.push( (resultSet.rows.item(i)).contacto );
+							}
+						}
+					},
+					function(tx,error){
+						console.log("------------------------");
+						console.log("Error");
+						console.log(JSON.stringify(error));
+						console.log("------------------------");
+					}
+				);
+			},
+			// DIS is error
+			function(){
+			},
+			// and DIS is done
+			function(){
+				console.log(JSON.stringify(data.users));
+				setName();
+			}
+		);
+	}
 	function setName(){
+		var txtName = "Ej.: Alumnos 4ºB";
+		if( typeof idToEdit !== 'undefined' ){
+			txtName = data.nombre;
+		}
 		navigator.notification.prompt(
 			"Ingrese el nombre del grupo", 
 			function(results){
@@ -1904,7 +1967,7 @@ function crearGrupo(idToEdit){
 			}, 
 			"Crear Grupo", 
 			["Aceptar","Cancelar"], 
-			"Ej.: Alumnos 4ºB"
+			txtName
 		);
 	}
 	function queryForImage(){
@@ -1954,6 +2017,9 @@ function crearGrupo(idToEdit){
 							li.appendChild(document.createTextNode(currObj.apellido+", "+currObj.nombre));
 							$("#select-users ul#user-list").append(li);
 						}
+						if( typeof idToEdit !== 'undefined' ){
+							txtName = data.nombre;
+						}
 					},
 					function(tx,error){
 						console.log("----------------- ERROR ---------------");
@@ -1992,6 +2058,7 @@ function crearGrupo(idToEdit){
 		);
 	}
 	function createGroup(){
+		navigator.notification.activityStart("Enviando","Enviando datos...");
 		var testURL = url+"/gcm/crear-grupo.php";
 		var params = {
 			nombre		: gName,
@@ -2001,7 +2068,7 @@ function crearGrupo(idToEdit){
 		if( typeof idToEdit !== 'undefined' ){
 			params.id = idToEdit;
 		}
-		console.log(JSON.stringify(params));
+		// console.log(JSON.stringify(params));
 		if( typeof imageURI === 'undefined' ){
 			if( checkConnection() ){
 				$.ajax({
@@ -2016,11 +2083,14 @@ function crearGrupo(idToEdit){
 						console.log(JSON.stringify(error));
 					}
 				}).done(function(){
-					var ver = chat!=null;
-					app.populateUsers();
-					if( ver ){
-						app.verGrupo();
+					if( typeof idToEdit === 'undefined' ){
+						app.populateUsers();
+					} else {
+						app.downloadUsers(function(){
+							app.verGrupo();
+						});
 					}
+					navigator.notification.activityStop();
 				});
 			} else {
 				navigator.notification.activityStop();
@@ -2041,15 +2111,19 @@ function crearGrupo(idToEdit){
 						
 						//*
 						var ft = new FileTransfer();
-						navigator.notification.activityStart("Enviando","Enviando foto...");
 						if( checkConnection() ){
 							ft.upload(
 								imageURI, 
 								testURL, 
 								function(result){
-									app.downloadUsers(function(){
-										app.verGrupo();
-									});
+									if( typeof idToEdit === 'undefined' ){
+										app.populateUsers();
+									} else {
+										app.downloadUsers(function(){
+											app.verGrupo();
+										});
+									}
+									navigator.notification.activityStop();
 								}, 
 								function(response){
 									console.log("Error");
