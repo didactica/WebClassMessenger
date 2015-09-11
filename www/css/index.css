@@ -850,4 +850,10 @@ strong.display-name{
 #ficha-usuario .usuario .detalle p{
 	line-height:56px;
 }
-
+#ficha-usuario .edit-button{
+	position:absolute;
+	top:5px;
+	right:5px;
+	font-size:14px;
+	color:#00F;
+}

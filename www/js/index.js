@@ -1,4 +1,3 @@
-
 // variables referenciales
 var url = "http://proyecto.webescuela.cl/sistema/testing";
 var user;
@@ -15,6 +14,8 @@ var bannerUsuarioHeight = {};
 var limitOffset = 0;
 var push;
 var userData;
+var userList;
+var lastUpdate;
 
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
 $("#tabs-usuarios li, #tabs-usuarios a").on("click",function(e){
@@ -64,30 +65,39 @@ var app = {
 				if( userLogin.length==0 || passLogin.length==0 ){
 					navigator.notification.alert("Debe ingresar su usuario y clave",function(){ $("input[name=usuario]").focus(); },"Error");
 				} else {
+					if( !checkConnection() ){
+						navigator.notification.activityStop();
+						navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
+						return;
+					}
 					navigator.notification.activityStart("Identificando","Comprobando datos...");
-					$.ajax({
-						url:url+"/gcm/login.php",
-						data:{user:userLogin, pass:passLogin, nocolegios:true},
-						dataType: 'json',
-						type:'POST',
-						success: function(resp){
-							navigator.notification.activityStop();
-							if(resp.state==0){
-								user = resp.user;
-								window.localStorage.setItem("user",user);
-								secuencia = 0;
-								window.localStorage.setItem("secuencia",secuencia);
-								app.initializeUser();
-							} else {
-								navigator.notification.alert("Error: \n"+resp.message,function(){ $("input[name=passrowd]").val(""); $("input[name=usuario]").focus() },"Login");
+					if( checkConnection() ){
+						$.ajax({
+							url:url+"/gcm/login.php",
+							data:{user:userLogin, pass:passLogin, nocolegios:true},
+							dataType: 'json',
+							type:'POST',
+							success: function(resp){
+								navigator.notification.activityStop();
+								if(resp.state==0){
+									user = resp.user;
+									window.localStorage.setItem("user",user);
+									secuencia = 0;
+									window.localStorage.setItem("secuencia",secuencia);
+									app.initializeUser();
+								} else {
+									navigator.notification.alert("Error: \n"+resp.message,function(){ $("input[name=passrowd]").val(""); $("input[name=usuario]").focus() },"Login");
+								}
+							},
+							error: function(resp){
+								navigator.notification.activityStop();
+								navigator.notification.alert("No se puede procesar su solicitud en estos momentos, por favor intentelo nuevamente más adelante.",function(){},"Error");
+								console.log(JSON.stringify(resp));
 							}
-						},
-						error: function(resp){
-							navigator.notification.activityStop();
-							navigator.notification.alert("No se puede procesar su solicitud en estos momentos, por favor intentelo nuevamente más adelante.",function(){},"Error");
-							console.log(JSON.stringify(resp));
-						}
-					});
+						});
+					} else {
+						navigator.notification.activityStop();
+					}
 				}
 			});
 		} else {
@@ -194,6 +204,11 @@ var app = {
 						message:message,
 						fecha:fecha
 					};
+					if( !checkConnection() ){
+						navigator.notification.activityStop();
+						navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
+						return;
+					}
 					$.ajax({
 						url:url+"/gcm/send.php?push=true",
 						data:postData,
@@ -239,17 +254,21 @@ var app = {
 				user : user, // FIXME: mandar la id del usuario actual
 				id: data.registrationId
 			}
-			$.ajax({
-				url : url+'/gcm/saveDeviceId.php',
-				data : data,
-				type: 'POST',
-				success : function(resp){
-					//console.log(resp);
-				}, 
-				error : function(resp,error){
-					console.log(JSON.stringify(resp));
-				}
-			});
+			if( checkConnection() ){
+				$.ajax({
+					url : url+'/gcm/saveDeviceId.php',
+					data : data,
+					type: 'POST',
+					success : function(resp){
+						//console.log(resp);
+					}, 
+					error : function(resp,error){
+						console.log(JSON.stringify(resp));
+					}
+				});
+			} else {
+				navigator.notification.activityStop();
+			}
 		}
 	},
 	pushMessage: function(data) {
@@ -265,50 +284,59 @@ var app = {
 				secuencia : secuencia,
 				leer:true
 			};
-			$.ajax({
-				url : url+'/gcm/getMessages.php',
-				data : params,
-				type : 'POST',
-				dataType : 'json',
-				success : function(result){
-					if(result.status==0){
-						for( var id in result.messages ){
-							var mes = result.messages[id];
-							if( parseInt(mes.secuencia)>parseInt(secuencia) ){
-								secuencia = mes.secuencia;
+			if( !checkConnection() ){
+				navigator.notification.activityStop();
+				navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
+				return;
+			}
+			if( checkConnection() ){
+				$.ajax({
+					url : url+'/gcm/getMessages.php',
+					data : params,
+					type : 'POST',
+					dataType : 'json',
+					success : function(result){
+						if(result.status==0){
+							for( var id in result.messages ){
+								var mes = result.messages[id];
+								if( parseInt(mes.secuencia)>parseInt(secuencia) ){
+									secuencia = mes.secuencia;
+								}
+								var n = new Notificacion();
+								n.insert(sql,mes,function(){
+								});
 							}
-							var n = new Notificacion();
-							n.insert(sql,mes,function(){
-							});
+							window.localStorage.setItem("secuencia",secuencia);
 						}
-						window.localStorage.setItem("secuencia",secuencia);
-					}
-				},
-				error : function(resp){
-				},
-			}).done(function(r){
-				//*
-				if( data.additionalData.foreground ){
-					if(chat!=null){
-						app.populateMessages();
-					} else {
-						app.populateUsers();
-					}
-				} else {
-					if( data.additionalData.coldstart ){
-						chat = data.additionalData.chat;
-						app.initializeUser();
-					} else {
+					},
+					error : function(resp){
+					},
+				}).done(function(r){
+					//*
+					if( data.additionalData.foreground ){
 						if(chat!=null){
-							limitOffset = 0;
 							app.populateMessages();
 						} else {
 							app.populateUsers();
 						}
+					} else {
+						if( data.additionalData.coldstart ){
+							chat = data.additionalData.chat;
+							app.initializeUser();
+						} else {
+							if(chat!=null){
+								limitOffset = 0;
+								app.populateMessages();
+							} else {
+								app.populateUsers();
+							}
+						}
 					}
-				}
-				//*/
-			});
+					//*/
+				});
+			} else {
+				navigator.notification.activityStop();
+			}
 		}
 	},
 	successHandler: function(result){
@@ -651,7 +679,7 @@ var app = {
 			case 'grupos':
 				var c = new Chat();
 				c.select(sql,filtroUsuario,true,function(contactos){
-					app.contactos = contactos;
+					userList = contactos;
 					$("#lista-usuarios").html("");
 					if( contactos.length>0 ){
 						for( var id in contactos ){
@@ -880,39 +908,43 @@ var app = {
 				user : user,
 				secuencia : secuencia
 			}
-			$.ajax({
-				url : url+'/gcm/getMessages.php',
-				data : params,
-				type : 'POST',
-				dataType : 'json',
-				success : function(result){
-					if(result.status==0){
-						for( var id in result.messages ){
-							var mes = result.messages[id];
-							if( parseInt(mes.secuencia)>parseInt(secuencia) ){
-								secuencia = mes.secuencia;
+			if( checkConnection() ){
+				$.ajax({
+					url : url+'/gcm/getMessages.php',
+					data : params,
+					type : 'POST',
+					dataType : 'json',
+					success : function(result){
+						if(result.status==0){
+							for( var id in result.messages ){
+								var mes = result.messages[id];
+								if( parseInt(mes.secuencia)>parseInt(secuencia) ){
+									secuencia = mes.secuencia;
+								}
+								var n = new Notificacion();
+								n.insert(sql,mes,function(){
+								});
 							}
-							var n = new Notificacion();
-							n.insert(sql,mes,function(){
-							});
+							window.localStorage.setItem("secuencia",secuencia);
+						} else if( typeof result.errormessage !== 'undefined' ) {
+							console.log(result.errormessage);
+						} else {
+							console.log(result);
 						}
-						window.localStorage.setItem("secuencia",secuencia);
-					} else if( typeof result.errormessage !== 'undefined' ) {
-						console.log(result.errormessage);
-					} else {
-						console.log(result);
+						if( callback ){
+							callback();
+						}
+					},
+					error: function(result){
+						console.log(JSON.stringify(result));
+						if( callback ){
+							callback();
+						}
 					}
-					if( callback ){
-						callback();
-					}
-				},
-				error: function(result){
-					console.log(JSON.stringify(result));
-					if( callback ){
-						callback();
-					}
-				}
-			});
+				});
+			} else {
+				navigator.notification.activityStop();
+			}
 		} else {
 			if( callback ){
 				callback();
@@ -934,52 +966,56 @@ var app = {
 					tabla:tabla,
 					secuencia:seq
 				};
-				$.ajax({
-					url:url+"/gcm/list-users.php",
-					data:data,
-					dataType:'json',
-					type:'POST',
-					success:function(resp){
-						var t = resp.tabla;
-						for( var id in resp.rows ){
-							switch(t){
-								case 'contacto':
-									var c = new Contacto();
-									c.insert(sql,resp.rows[id]);
-									var s = window.localStorage.getItem("secuencia-contacto");
-									if( !isNaN(s) && parseInt(s) < c.secuencia ){
-										window.localStorage.setItem("secuencia-contacto",c.secuencia);
-									}
-									break;
-								case 'chat':
-									var c = new Chat();
-									c.insert(sql,resp.rows[id]);
-									var s = window.localStorage.getItem("secuencia-chat");
-									if( !isNaN(s) && parseInt(s) < c.secuencia ){
-										window.localStorage.setItem("secuencia-chat",c.secuencia);
-									}
-									break;
-								case 'chat_contacto':
-									var c = new ChatContacto();
-									c.insert(sql,resp.rows[id]);
-									var s = window.localStorage.getItem("secuencia-chat_contacto");
-									if( !isNaN(s) && parseInt(s) < c.secuencia ){
-										window.localStorage.setItem("secuencia-chat_contacto",c.secuencia);
-									}
-									break;
+				if( checkConnection() ){
+					$.ajax({
+						url:url+"/gcm/list-users.php",
+						data:data,
+						dataType:'json',
+						type:'POST',
+						success:function(resp){
+							var t = resp.tabla;
+							for( var id in resp.rows ){
+								switch(t){
+									case 'contacto':
+										var c = new Contacto();
+										c.insert(sql,resp.rows[id]);
+										var s = window.localStorage.getItem("secuencia-contacto");
+										if( !isNaN(s) && parseInt(s) < c.secuencia ){
+											window.localStorage.setItem("secuencia-contacto",c.secuencia);
+										}
+										break;
+									case 'chat':
+										var c = new Chat();
+										c.insert(sql,resp.rows[id]);
+										var s = window.localStorage.getItem("secuencia-chat");
+										if( !isNaN(s) && parseInt(s) < c.secuencia ){
+											window.localStorage.setItem("secuencia-chat",c.secuencia);
+										}
+										break;
+									case 'chat_contacto':
+										var c = new ChatContacto();
+										c.insert(sql,resp.rows[id]);
+										var s = window.localStorage.getItem("secuencia-chat_contacto");
+										if( !isNaN(s) && parseInt(s) < c.secuencia ){
+											window.localStorage.setItem("secuencia-chat_contacto",c.secuencia);
+										}
+										break;
+								}
+							}
+							if( callback && t=='chat'){ // chat es el ultimo elemento del arreglo
+								callback();
+							}
+						},
+						error:function(resp){
+							console.log(JSON.stringify(resp));
+							if( callback ){
+								callback();
 							}
 						}
-						if( callback && t=='chat'){ // chat es el ultimo elemento del arreglo
-							callback();
-						}
-					},
-					error:function(resp){
-						console.log(JSON.stringify(resp));
-						if( callback ){
-							callback();
-						}
-					}
-				});
+					});
+				} else {
+					navigator.notification.activityStop();
+				}
 			}
 		} else {
 			if( callback ){
@@ -994,17 +1030,21 @@ var app = {
 			user: user,
 			chat: chat
 		}
-		$.ajax({
-			url : url+"/gcm/read.php",
-			data: params,
-			type: 'POST',
-			success: function(r){
-			},
-			error: function(e,error){
-				console.log(JSON.stringify(e));
-				console.log(error);
-			}
-		});
+		if( checkConnection() ){
+			$.ajax({
+				url : url+"/gcm/read.php",
+				data: params,
+				type: 'POST',
+				success: function(r){
+				},
+				error: function(e,error){
+					console.log(JSON.stringify(e));
+					console.log(error);
+				}
+			});
+		} else {
+			navigator.notification.activityStop();
+		}
 	},
 	setTitle: function(){
 		var tDom = $("#titulo");
@@ -1050,7 +1090,6 @@ var app = {
 								tDom.append("<span class='ver-usuario'>"+cObj.display_name+"</span>");
 								$(".ver-usuario").off("click");
 								$(".ver-usuario").on("click",function(e){
-									//TODO: get user data and groups
 									var contacto = new Contacto();
 									contacto.select(
 										sql,
@@ -1134,7 +1173,6 @@ var app = {
 		} else {
 			var menu = [];
 			if( tab=='grupos' ){
-				//TODO:
 				menu.push(
 					{
 						id:'ver-grupo',
@@ -1190,7 +1228,6 @@ var app = {
 	eventListeners: function(){
 		$("#ver-usuario").off("click");
 		$("#ver-usuario").on("click",function(e){
-			//TODO: get user data and groups
 			var contacto = new Contacto();
 			contacto.select(
 				sql,
@@ -1202,7 +1239,6 @@ var app = {
 		});
 		$("#sacar-foto").off("click");
 		$("#sacar-foto").on("click",function(e){
-			//TODO: MAKE THE SOURCE OF PHOTO SELECTABLE
 			$("#select-source a").hide();
 			$("#select-source").show('slow').promise().done(function(){
 				$("#select-source a").fadeIn();
@@ -1218,6 +1254,11 @@ var app = {
 		});
 		$("#select-source a").off("click");
 		$("#select-source a").on("click",function(){
+			if( !checkConnection() ){
+				navigator.notification.activityStop();
+				navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
+				return;
+			}
 			$("#select-source").hide(1000);
 			var action = parseInt($(this).attr("data-ref"));
 			var image = true;
@@ -1261,7 +1302,11 @@ var app = {
 						
 						var ft = new FileTransfer();
 						navigator.notification.activityStart("Enviando","Enviando foto...");
-						ft.upload(imageURI, url+"/gcm/upload.php", win, fail, options);
+						if( checkConnection() ){
+							ft.upload(imageURI, url+"/gcm/upload.php", win, fail, options);
+						} else {
+							navigator.notification.activityStop();
+						}
 					});
 				},function(e){
 					console.log("Error abriendo archivo.");
@@ -1295,6 +1340,11 @@ var app = {
 									};
 									silenciado=!silenciado;
 									app.inflateMenu();
+									if( !checkConnection() ){
+										navigator.notification.activityStop();
+										navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
+										return;
+									}
 									$.ajax({
 										url:url+"/gcm/silence.php",
 										data:params,
@@ -1317,26 +1367,7 @@ var app = {
 		});
 		$("#ver-grupo").off("click");
 		$("#ver-grupo").on("click",function(e){
-			var data;
-			sql.transaction(
-				function(tx){
-					tx.executeSql(
-						"SELECT * FROM chat	WHERE id=?",
-						[chat],
-						function(tx,res){
-							data = res.rows.item(0);
-						}
-					);
-				},
-				function(var1, var2){
-					console.log(var1);
-					console.log(var1);
-				},
-				function(){
-					data.grupo = true;
-					app.verFichaUsuario(data);
-				}
-			);
+			app.verGrupo();
 		});
 		$("#btn-logout").off("click");
 		$("#btn-logout").on("click",function(e){
@@ -1361,9 +1392,30 @@ var app = {
 			});
 		});
 	},
+	verGrupo: function(){
+		var data;
+		sql.transaction(
+			function(tx){
+				tx.executeSql(
+					"SELECT * FROM chat	WHERE id=?",
+					[chat],
+					function(tx,res){
+						data = res.rows.item(0);
+					}
+				);
+			},
+			function(var1, var2){
+				console.log(var1);
+				console.log(var1);
+			},
+			function(){
+				data.grupo = true;
+				app.verFichaUsuario(data);
+			}
+		);
+	},
 	verFichaUsuario: function(data){
 		if( data.grupo ){
-			// TODO: READ USERS AND LIST THEM
 			sql.transaction(
 				function(tx){
 					var contacto = chat;
@@ -1740,7 +1792,11 @@ function listDirectory(entry){
 												
 												var ft = new FileTransfer();
 												navigator.notification.activityStart("Enviando","Enviando archivo...");
-												ft.upload(fileURI, url+"/gcm/upload.php", win, fail, options);
+												if( checkConnection() ){
+													ft.upload(fileURI, url+"/gcm/upload.php", win, fail, options);
+												} else {
+													navigator.notification.activityStop();
+												}
 											});
 										},function(e){
 											console.log("Error abriendo archivo.");
@@ -1797,31 +1853,40 @@ function win(resp){
 				message:message,
 				fecha:fecha
 			};
-			$.ajax({
-				url:url+"/gcm/send.php?push=true",
-				data:postData,
-				type:'POST',
-				dataType:'json',
-				success:function(resp){
-					$("#inp-message").val("");
-					resp.data.class = "fa fa-ellipsis-h";
-					app.addMessage(resp.data);
-					navigator.notification.activityStop();
-				},
-				error: function(resp,error){
-					console.log(JSON.stringify(resp));
-					console.log(error);
-					navigator.notification.activityStop();
-					navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
-				}
-			});
+			if( checkConnection() ){
+				$.ajax({
+					url:url+"/gcm/send.php?push=true",
+					data:postData,
+					type:'POST',
+					dataType:'json',
+					success:function(resp){
+						$("#inp-message").val("");
+						resp.data.class = "fa fa-ellipsis-h";
+						app.addMessage(resp.data);
+						navigator.notification.activityStop();
+					},
+					error: function(resp,error){
+						console.log(JSON.stringify(resp));
+						console.log(error);
+						navigator.notification.activityStop();
+						navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
+					}
+				});
+			} else {
+				navigator.notification.activityStop();
+			}
 		}
 	}
 }
 function fail(error){
 	navigator.notification.activityStop();
 }
-function crearGrupo(){
+function crearGrupo(idToEdit){
+	if( !checkConnection() ){
+		navigator.notification.activityStop();
+		navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
+		return;
+	}
 	var gName;
 	var imageURI;
 	var users = [user]; // this user NEEDS to be in the group
@@ -1929,25 +1994,40 @@ function crearGrupo(){
 		);
 	}
 	function createGroup(){
+		navigator.notification.activityStart("Enviando","Enviando datos...");
 		var testURL = url+"/gcm/crear-grupo.php";
 		var params = {
 			nombre		: gName,
 			users		: users,
 			user		: user
 		};
+		if( typeof idToEdit !== 'undefined' ){
+			params.id = idToEdit;
+		}
+		// console.log(JSON.stringify(params));
 		if( typeof imageURI === 'undefined' ){
-			$.ajax({
-				url			: testURL,
-				data		: params,
-				dataType	: 'json',
-				contentType	: 'application/json; charset=utf-8',
-				success		: function( resp ){
-					// console.log(JSON.stringify(resp));
-				},
-				error		: function( error ){
-					console.log(JSON.stringify(error));
-				}
-			}).done(app.populateUsers);
+			if( checkConnection() ){
+				$.ajax({
+					url			: testURL,
+					data		: params,
+					dataType	: 'json',
+					contentType	: 'application/json; charset=utf-8',
+					success		: function( resp ){
+						console.log(JSON.stringify(resp));
+					},
+					error		: function( error ){
+						console.log(JSON.stringify(error));
+					}
+				}).done(function(){
+					app.downloadUsers(function(){
+						app.verGrupo();
+					});
+					navigator.notification.activityStop();
+				});
+			} else {
+				navigator.notification.activityStop();
+			}
+
 		} else {
 			var options = new FileUploadOptions();
 			options.fileKey="file";
@@ -1963,17 +2043,24 @@ function crearGrupo(){
 						
 						//*
 						var ft = new FileTransfer();
-						navigator.notification.activityStart("Enviando","Enviando foto...");
-						ft.upload(
-							imageURI, 
-							testURL, 
-							function(result){
-								// console.log(JSON.stringify(result));
-								app.populateUsers();
-							}, 
-							fail, 
-							options
-						);
+						if( checkConnection() ){
+							ft.upload(
+								imageURI, 
+								testURL, 
+								function(result){
+									app.downloadUsers(function(){
+										app.verGrupo();
+									});
+								}, 
+								function(response){
+									console.log("Error");
+									console.log(JSON.stringify(response));
+								}, 
+								options
+							);
+						} else{
+							navigator.notification.activityStop();
+						}
 						//*/
 					});
 				},function(e){
@@ -2028,46 +2115,58 @@ function verUsuario(usuario){
 	);
 }
 function salirGrupo(){
+	if( !checkConnection() ){
+		navigator.notification.activityStop();
+		navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
+		return;
+	}
 	navigator.notification.confirm(
 		"¿Seguro desea salir del grupo?",
 		function(buttonIndex){
 			if( buttonIndex==1 ){
-				$.ajax({
-					url: url+'/gcm/abandonar-grupo.php',
-					data:{usuario:user, chat:chat},
-					contentType:'aplication/json; charset=utf-8',
-					success:function(response){
-						// console.log(JSON.stringify(response));
-						sql.transaction(
-							function(tx){
-								tx.executeSql(
-									"DELETE FROM chat WHERE id=?",
-									[chat],
-									function(tx,resultSet){
-									},
-									function(res,error){
-										console.log(JSON.stringify(error));
-									}
-								);
-							},
-							function(){
-							},
-							function(){
-								chat = null;
-								$("#ficha-usuario").html("").hide();
-								$(".heading, #chat, #search-group").show();
-								app.initializeUser();
-							}
-						);
-					},
-					error:function(response,error){
-						console.log(response);
-						console.log(error);
-					}
-				});
+				if( checkConnection() ){
+					$.ajax({
+						url: url+'/gcm/abandonar-grupo.php',
+						data:{usuario:user, chat:chat},
+						contentType:'aplication/json; charset=utf-8',
+						success:function(response){
+							// console.log(JSON.stringify(response));
+							sql.transaction(
+								function(tx){
+									tx.executeSql(
+										"DELETE FROM chat WHERE id=?",
+										[chat],
+										function(tx,resultSet){
+										},
+										function(res,error){
+											console.log(JSON.stringify(error));
+										}
+									);
+								},
+								function(){
+								},
+								function(){
+									chat = null;
+									$("#ficha-usuario").html("").hide();
+									$(".heading, #chat, #search-group").show();
+									app.initializeUser();
+								}
+							);
+						},
+						error:function(response,error){
+							console.log(response);
+							console.log(error);
+						}
+					});
+				} else {
+					navigator.notification.activityStop();
+				}
 			}
 		},
 		"Salir",
 		["Si","No"]
 	);
+}
+function checkConnection(){
+	return ( (typeof navigator.connection !== 'undefined') && (navigator.connection.type!=Connection.NONE) );
 }
