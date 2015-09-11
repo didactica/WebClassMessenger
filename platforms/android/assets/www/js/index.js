@@ -1071,7 +1071,6 @@ var app = {
 								texto.className = 'texto';
 								texto.appendChild(document.createTextNode(cObj.display_name));
 								tDom.append(texto);
-								//tDom.append(cObj.display_name);
 							}
 						}
 					});
@@ -2067,8 +2066,11 @@ function crearGrupo(idToEdit){
 		};
 		if( typeof idToEdit !== 'undefined' ){
 			params.id = idToEdit;
+			if( typeof imageURI === 'undefined' ){
+				params.foto = 1;
+			}
 		}
-		// console.log(JSON.stringify(params));
+		console.log(JSON.stringify(params));
 		if( typeof imageURI === 'undefined' ){
 			if( checkConnection() ){
 				$.ajax({

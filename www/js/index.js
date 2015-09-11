@@ -2066,8 +2066,11 @@ function crearGrupo(idToEdit){
 		};
 		if( typeof idToEdit !== 'undefined' ){
 			params.id = idToEdit;
+			if( typeof imageURI === 'undefined' ){
+				params.foto = 1;
+			}
 		}
-		// console.log(JSON.stringify(params));
+		console.log(JSON.stringify(params));
 		if( typeof imageURI === 'undefined' ){
 			if( checkConnection() ){
 				$.ajax({
