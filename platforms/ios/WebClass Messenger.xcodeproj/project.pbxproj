@@ -62,6 +62,7 @@
 		57CED1D1718B41F1B143F51C /* ActivityIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 920D4AF424F34413A8E5129C /* ActivityIndicator.m */; };
 		1A765F21EF924B359F04B844 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = D77D653527B545D697E37A84 /* MBProgressHUD.m */; };
 		63DD3BB4F31B44F3B4E86614 /* CDVDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E07721D85F04AA7BF63C5B7 /* CDVDevice.m */; };
+		12F555288BBF4370AFF2BF09 /* CDVStatusBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 694EF85A02CE484C96E10700 /* CDVStatusBar.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -171,6 +172,8 @@
 		DCA1C33889F44F3684B282A9 /* MBProgressHUD.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "MBProgressHUD.h"; path = "org.apache.cordova.plugin.ActivityIndicator/MBProgressHUD.h"; sourceTree = "<group>"; fileEncoding = 4; };
 		4E07721D85F04AA7BF63C5B7 /* CDVDevice.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVDevice.m"; path = "cordova-plugin-device/CDVDevice.m"; sourceTree = "<group>"; fileEncoding = 4; };
 		AD70DED12283471CBA358110 /* CDVDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVDevice.h"; path = "cordova-plugin-device/CDVDevice.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		694EF85A02CE484C96E10700 /* CDVStatusBar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVStatusBar.m"; path = "cordova-plugin-statusbar/CDVStatusBar.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		F994FBBFA3994125B1FB3CB5 /* CDVStatusBar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVStatusBar.h"; path = "cordova-plugin-statusbar/CDVStatusBar.h"; sourceTree = "<group>"; fileEncoding = 4; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -320,6 +323,8 @@
 				DCA1C33889F44F3684B282A9 /* MBProgressHUD.h */,
 				4E07721D85F04AA7BF63C5B7 /* CDVDevice.m */,
 				AD70DED12283471CBA358110 /* CDVDevice.h */,
+				694EF85A02CE484C96E10700 /* CDVStatusBar.m */,
+				F994FBBFA3994125B1FB3CB5 /* CDVStatusBar.h */,
 			);
 			name = Plugins;
 			path = "WebClass Messenger/Plugins";
@@ -527,6 +532,7 @@
 				57CED1D1718B41F1B143F51C /* ActivityIndicator.m in Sources */,
 				1A765F21EF924B359F04B844 /* MBProgressHUD.m in Sources */,
 				63DD3BB4F31B44F3B4E86614 /* CDVDevice.m in Sources */,
+				12F555288BBF4370AFF2BF09 /* CDVStatusBar.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

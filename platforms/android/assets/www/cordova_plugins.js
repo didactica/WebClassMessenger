@@ -264,6 +264,13 @@ module.exports = [
         "clobbers": [
             "device"
         ]
+    },
+    {
+        "file": "plugins/cordova-plugin-statusbar/www/statusbar.js",
+        "id": "cordova-plugin-statusbar.statusbar",
+        "clobbers": [
+            "window.StatusBar"
+        ]
     }
 ];
 module.exports.metadata = 
@@ -279,7 +286,8 @@ module.exports.metadata =
     "phonegap-plugin-push": "1.2.2",
     "cordova-plugin-console": "1.0.1",
     "org.apache.cordova.plugin.ActivityIndicator": "1.0.0",
-    "cordova-plugin-device": "1.0.1"
+    "cordova-plugin-device": "1.0.1",
+    "cordova-plugin-statusbar": "1.0.1"
 }
 // BOTTOM OF METADATA
 });

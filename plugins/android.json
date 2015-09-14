@@ -47,6 +47,10 @@
                         {
                             "xml": "<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"StatusBar\"><param name=\"android-package\" value=\"org.apache.cordova.statusbar.StatusBar\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
                         }
                     ]
                 }
@@ -149,6 +153,9 @@
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         },
         "cordova-plugin-device": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "cordova-plugin-statusbar": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         }
     },

@@ -44,6 +44,15 @@
     <feature name="ActivityIndicator">
         <param name="ios-package" value="ActivityIndicator" />
     </feature>
+    <feature name="Device">
+        <param name="ios-package" value="CDVDevice" />
+    </feature>
+    <feature name="StatusBar">
+        <param name="ios-package" value="CDVStatusBar" />
+        <param name="onload" value="true" />
+    </feature>
+    <preference name="StatusBarOverlaysWebView" value="true" />
+    <preference name="StatusBarStyle" value="lightcontent" />
     <allow-intent href="itms:*" />
     <allow-intent href="itms-apps:*" />
     <name>WebClass Messenger</name>
@@ -114,7 +123,4 @@
     <allow-navigation href="data:*" />
     <allow-navigation href="file:*" />
     <allow-navigation href="files:*" />
-    <feature name="Device">
-        <param name="ios-package" value="CDVDevice" />
-    </feature>
 </widget>

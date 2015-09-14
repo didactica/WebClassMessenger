@@ -55,6 +55,18 @@
                         {
                             "xml": "<feature name=\"Device\"><param name=\"ios-package\" value=\"CDVDevice\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"StatusBar\"><param name=\"ios-package\" value=\"CDVStatusBar\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<preference name=\"StatusBarOverlaysWebView\" value=\"true\" />",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<preference name=\"StatusBarStyle\" value=\"lightcontent\" />",
+                            "count": 1
                         }
                     ]
                 }
@@ -155,6 +167,9 @@
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         },
         "cordova-plugin-device": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "cordova-plugin-statusbar": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         }
     },

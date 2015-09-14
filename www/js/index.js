@@ -1,7 +1,7 @@
 // variables referenciales
 var url = "http://proyecto.webescuela.cl/sistema/testing";
 var user;
-var chat;
+var chat=null;
 var sql;
 var secuencia;
 var notificacion = new Notificacion();
@@ -101,12 +101,15 @@ var app = {
 				}
 			});
 		} else {
+			console.log("User is NOT null");
 			app.initializeUser();
 		}
     },
 	initializeUser: function(){
+		console.log("Initialize User");
 		// BDD
 		sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
+		console.log("Database Openned");
 		// BUILD MENU
 		app.inflateMenu();
 		secuencia = window.localStorage.getItem("secuencia")
@@ -119,8 +122,10 @@ var app = {
 		app.downloadMessages();
 		app.setTitle();
 		app.receivedEvent('deviceready');
-		if( chat==null ){
+		if( chat==null || !chat){
+			console.log("get new messages");
 			app.getNewMessages();
+			console.log("done with new messages");
 			$("#lista-usuarios").html("");
 			$("#tabs-usuarios ul li").removeClass("active");
 			switch(tab){
@@ -144,6 +149,7 @@ var app = {
 				var action = ($($(this).find('a')).attr("href")).substr(1);
 				tab = action;
 				app.initializeUser();
+				return;
 			});
 			$("#usuarios").show();
 			$("#chat").hide();
@@ -180,7 +186,9 @@ var app = {
 					}
 				});
 			});
+			console.log("Populate Users Start");
 			app.populateUsers();
+			console.log("Populate Users End");
 		} else {
 			ActivityIndicator.show("Cargando mensajes");
 			$("#usuarios").hide();
