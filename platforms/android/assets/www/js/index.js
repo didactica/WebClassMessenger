@@ -247,6 +247,7 @@ var app = {
 		});
     },
 	pushRegistration: function(data) {
+		console.log(JSON.stringify(data));
 		// data.registrationId
 		if ( data.registrationId.length > 0 )
 		{

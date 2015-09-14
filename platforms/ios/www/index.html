@@ -2,12 +2,14 @@
 <html>
     <head>
         <meta charset="utf-8" />
+        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <!-- <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" /> -->
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <link rel="stylesheet" href="css/font-awesome.min.css" />
+        <link rel="stylesheet" href="jquery-ui/jquery-ui.min.css" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
         <title>WebClass Messenger</title>
@@ -21,7 +23,7 @@
 					<!-- chat-container  -->
 					<div id="chat-container">
 						<!-- search-group -->
-						<div id="search-group">
+						<div id="search-group" class="hide-login">
 							<a href='#' onclick='backButton(); return false;' class='pull-left'>
 								<i class='fa fa-angle-left fa-2x'></i>
 							</a>
@@ -31,7 +33,7 @@
 						</div>
 						<!-- search-group -->
 						<!-- heading -->
-						<div class="heading">
+						<div class="heading hide-login">
 							<span id="titulo">&nbsp;WebClass</span>
 							<div class="btn-group pull-right">
 								<button id="btn-menu" type="button" class="btn btn-link dropdown-toggle hide-login collapse" data-toggle="dropdown">
@@ -46,39 +48,40 @@
 							</button>
 						</div>
 						<!-- heading -->
-						<!-- login-container -->
-						<div id="login-container" class="collapse">
-							<form id="login-form">
-								<h3 class="content-header">Login</h3>
-								<hr/>
-								<div class="form-group">
-									<input type="text" class="form-control input-lg" name="usuario" id="usuario"  placeholder="Usuario" />
-								</div>
-								<div class="form-group">
-									<input type="password" class="form-control input-lg" name="password" id="password" placeholder="Clave"/>
-								</div>
-								<div class="form-group">
-									<button class="btn btn-info btn-lg"><i class="fa fa-sign-in"></i> Entrar</button>
-								</div>
-								<center>
-									<a href="#" onclick="window.open('http://proyecto.webescuela.cl/sistema/webclass/','_system','location=no');">Olvid&eacute; mi clave</a>
-								</center>
-							</form>
-						</div>
-						<!-- login-container -->
 						<!-- main-content -->
 						<div id="main-content" class="hide-login collapse">
+							<div id="menu-container-fixed" style="position:fixed; width:100%; z-index:300;">
+								<div id="select-source">
+									<a href="#" data-ref="1">
+										<i class="fa fa-picture-o fa-flip-horizontal fa-2x"></i>
+										<br/>
+										<span>Galería</span>
+									</a>
+									<a href="#" data-ref="2">
+										<i class="fa fa-camera-retro fa-2x"></i>
+										<br/>
+										<span>Camara</span>
+									</a>
+									<a href="#" data-ref="3">
+										<i class="fa fa-folder-open-o fa-2x"></i>
+										<br/>
+										<span>Otro</span>
+									</a>
+								</div>
+							</div>
 							<div id="usuarios">
 								<div id="tabs-usuarios">
-									<ul class="nav nav-tabs hide-login collapse">
-										<li><a href="#grupos">GRUPOS <span id="grupo-new" class="badge collapse">1</span></a></li>
-										<li><a href="#chats">CHATS <span id="chat-new" class="badge collapse">1</span></a></li>
-										<li class="active"><a href="#usuarios">USUARIOS</a></li>
+									<ul class="hide-login">
+										<li><a href="#grupos">GRUPOS <span id="grupo-new" class="badge collapse">1</span></a></li><!--
+										--><li><a href="#chats">CHATS <span id="chat-new" class="badge collapse">1</span></a></li><!--
+										--><li class="active"><a href="#usuarios">USUARIOS</a></li>
 									</ul>
 								</div>
 								<div id="lista-usuarios"></div>
 							</div>
 							<div id="chat" class="collapse">
+								<div class="spacer" style="margin-top:4em;"></div>
+								<div class="moar-messages collapse"><a href="#">MOSTRAR MENSAJES ANTERIORES</a></div>
 								<div id="messages" class="messages">
 									<ul id="chat-window" class="chat">
 									</ul>
@@ -96,6 +99,23 @@
 							</div>
 						</div>
 						<!-- main-content -->
+						<!-- login-container -->
+						<div id="login-container" class="collapse">
+							<form id="login-form">
+								<div style="width:80%; margin:0 auto 30px; padding-top:40px;"><img class="img-responsive" src="img/logo.png"></div>
+								<div class="login-inputs">
+									<input type="text" class="input-lg" name="usuario" id="usuario"  placeholder="&#xf007;     Usuario" />
+									<input type="password" class="input-lg" name="password" id="password" placeholder="&#xf084;     Clave"/>
+								</div>
+								<div class="form-group">
+									<button class="btn btn-info btn-lg"><i class="fa fa-sign-in"></i> Entrar</button>
+								</div>
+								<div style="text-align:center;">
+									<a href="#" onclick="window.open('http://proyecto.webescuela.cl/sistema/webclass/','_system','location=no');">Olvid&eacute; mi clave</a>
+								</div>
+							</form>
+						</div>
+						<!-- login-container -->
 					</div>
 					<!-- chat-container  -->
 				</div>
@@ -103,11 +123,41 @@
 			</div>
 			<!-- row -->
 		</div>
+		<!-- file browser -->
+		<div id="file-browser" class="big-prompt collapse">
+			<div class="big-prompt-container">
+				<div class="header"><span class="title">Abrir Archivo</span></div>
+				<div class="body">
+					<ul id="file-list" class="nav nav-list">
+						<!-- all folders and files to be added here -->
+					</ul>
+				</div>
+				<div class="spacer"></div>
+				<div id="close-file-browser" class="actionButton">Cancelar</div>
+			</div>
+		</div>
+		<!-- file browser -->
+		<!-- user select -->
+		<div id="select-users" class="big-prompt collapse">
+			<div class="big-prompt-container collapse">
+				<div class="header">
+					<span class="title">Seleccionar Usuarios</span>
+				</div>
+				<div class="body">
+					<ul id="user-list" class="nav nav-list">
+						<!-- all users to be added here -->
+					</ul>
+				</div>
+				<div class="spacer"></div>
+				<div id="done">Continuar</div>
+			</div>
+		</div>
+		<!-- user select -->
 		<script id="outgoing-chat" type="text/html">
 			<li class="right clearfix panel">
 				<div class="chat-body clearfix">
 					<p class="message">
-					{{message}}
+					{{{message}}}
 					</p>
 					<div class="header">
 						<small class="pull-right text-muted">
@@ -124,7 +174,7 @@
 					<strong class="group-user" style="color:{{color}};">{{titulo}}</strong>
 					{{/if}}
 					<p class="message">
-					{{message}}
+					{{{message}}}
 					</p>
 					<div class="header">
 						<small class="pull-right text-muted">
@@ -158,7 +208,7 @@
 						<strong class="display-name">{{display_name}}</strong>
 						<small class="muted pull-right">{{time}}</small>
 						<br/>
-						<span class="muted mensajepreview">{{mensaje}}</span>{{#if mensajes}}<small class="pull-right badge">{{mensajes}}</small>{{/if}}
+						<span class="muted mensajepreview">{{{mensaje}}}</span>{{#if mensajes}}<small class="pull-right badge">{{mensajes}}</small>{{/if}}
 					</p>
 				</div>
 			</a>
@@ -211,9 +261,57 @@
 				</div>
 			</div>
 		</script>
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="js/PushNotification.js"></script>
+		<script id="ficha-grupo-template" type="text/html">
+			<div id="back-ficha-usuario" onclick="backButton(); return false;">
+				<span><i class="fa fa-angle-left fa-2x"></i></span>
+			</div>
+			<div class="banner-usuario" style="background-color:rgb(22,128,202); background-size:100%;">
+				<span class="nombre-usuario">{{nombre}}</span>
+			</div>
+			<div class="banner-usuario bg" style="background-image:url({{foto}});">
+				<span class="nombre-usuario">{{nombre}}</span>
+			</div>
+			<div class="detalles-ficha-usuario">
+				<div class="panel clearfix">
+					<div class="content">
+						<div style='position:relative;'><span id='edit-nombre-grupo' class='edit-button pull-right' onclick="crearGrupo({{id}});"><i class='fa fa-edit'></i> Editar</span></div>
+						<p style="padding:1em; text-align:center;">
+							<strong style="font-size:1.5em;">{{nombre}}</strong><br/>
+							<span class="muted">Grupo</span>
+						</p>
+					</div>
+				</div>
+				<div class="panel clearfix">
+					<h5>Usuarios</h5>
+					<hr/>
+					<div class="content">
+					{{#if usuarios}}
+						{{#each usuariosArray}}
+						<div class="grupo">
+							<a href="#" class="usuario clearfix" onclick="app.openChat({{idusuario}}); return false;">
+								<div class="foto-usuario">
+									<img src="{{display_image}}">
+								</div>
+								<div class="detalle">
+									<p>
+										<strong class="display-name">{{display_name}}</strong>
+									</p>
+								</div>
+							</a>
+						</div>
+						{{/each}}
+					{{else}}
+						<strong>No hay usuarios</strong>
+					{{/if}}
+					</div>
+				</div>
+			</div>
+			<button id="btn-salir-grupo" class="btn btn-danger" onclick="salirGrupo(); return false;">Abandonar Grupo</button>
+		</script>
         <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="cordova.js"></script>
+		<script type="text/javascript" src="jquery-ui/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="js/PushNotification.js"></script>
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
         <script type="text/javascript" src="js/handlebars.js"></script>
 		<script type="text/javascript" src="js/contacto.js"></script>

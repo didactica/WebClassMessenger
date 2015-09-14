@@ -1,3 +1,14 @@
+create table operating_system(
+	id integer primary key not null,
+	descripcion varchar(128) not null
+);
+insert into operating_system values(1,'iOS'),(2,'Android'),(3,'Windows Phone'),(4,'BlackBerry');
+create table dispositivo_usuario(
+	id integer primary key not null auto_increment,
+	usuario integer not null references usuario(id) on delete cascade,
+	device varchar(160),
+	opsys integer not null references operating_system(id) on delete cascade
+);
 create table contacto(
 	id integer primary key not null auto_increment,
 	idusuario integer not null unique,

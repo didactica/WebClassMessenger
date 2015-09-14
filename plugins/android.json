@@ -133,6 +133,9 @@
         },
         "phonegap-plugin-push": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         }
     },
     "dependent_plugins": {}
