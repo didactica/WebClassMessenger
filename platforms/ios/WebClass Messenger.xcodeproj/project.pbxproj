@@ -59,6 +59,9 @@
 		EDA46AFB73B84F41AAE05CF7 /* UIImage+CropScaleOrientation.m in Sources */ = {isa = PBXBuildFile; fileRef = 215BF6697CF942928D6D8A50 /* UIImage+CropScaleOrientation.m */; };
 		F480D5DF877742029A1BCE87 /* CDVJpegHeaderWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = B618690D81AD4F3BA7A1D4B5 /* CDVJpegHeaderWriter.m */; };
 		9368FE384E7F4699B8ECF265 /* CDVLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EE832CF58E349ABB59745FC /* CDVLogger.m */; };
+		57CED1D1718B41F1B143F51C /* ActivityIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 920D4AF424F34413A8E5129C /* ActivityIndicator.m */; };
+		1A765F21EF924B359F04B844 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = D77D653527B545D697E37A84 /* MBProgressHUD.m */; };
+		63DD3BB4F31B44F3B4E86614 /* CDVDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E07721D85F04AA7BF63C5B7 /* CDVDevice.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -162,6 +165,12 @@
 		FDBCB3B419834A1E829590F8 /* CDVFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CDVFile.h; path = "cordova-plugin-file/CDVFile.h"; sourceTree = "<group>"; };
 		6EE832CF58E349ABB59745FC /* CDVLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVLogger.m"; path = "cordova-plugin-console/CDVLogger.m"; sourceTree = "<group>"; fileEncoding = 4; };
 		0C841146ED0A46F794876319 /* CDVLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVLogger.h"; path = "cordova-plugin-console/CDVLogger.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		920D4AF424F34413A8E5129C /* ActivityIndicator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "ActivityIndicator.m"; path = "org.apache.cordova.plugin.ActivityIndicator/ActivityIndicator.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		D77D653527B545D697E37A84 /* MBProgressHUD.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "MBProgressHUD.m"; path = "org.apache.cordova.plugin.ActivityIndicator/MBProgressHUD.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		4D8F25A24EDA49A29F53E6B5 /* ActivityIndicator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ActivityIndicator.h"; path = "org.apache.cordova.plugin.ActivityIndicator/ActivityIndicator.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		DCA1C33889F44F3684B282A9 /* MBProgressHUD.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "MBProgressHUD.h"; path = "org.apache.cordova.plugin.ActivityIndicator/MBProgressHUD.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		4E07721D85F04AA7BF63C5B7 /* CDVDevice.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVDevice.m"; path = "cordova-plugin-device/CDVDevice.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		AD70DED12283471CBA358110 /* CDVDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVDevice.h"; path = "cordova-plugin-device/CDVDevice.h"; sourceTree = "<group>"; fileEncoding = 4; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -305,6 +314,12 @@
 				F2C11A9A546142AEA855BDA4 /* CDVInAppBrowser.h */,
 				6EE832CF58E349ABB59745FC /* CDVLogger.m */,
 				0C841146ED0A46F794876319 /* CDVLogger.h */,
+				920D4AF424F34413A8E5129C /* ActivityIndicator.m */,
+				D77D653527B545D697E37A84 /* MBProgressHUD.m */,
+				4D8F25A24EDA49A29F53E6B5 /* ActivityIndicator.h */,
+				DCA1C33889F44F3684B282A9 /* MBProgressHUD.h */,
+				4E07721D85F04AA7BF63C5B7 /* CDVDevice.m */,
+				AD70DED12283471CBA358110 /* CDVDevice.h */,
 			);
 			name = Plugins;
 			path = "WebClass Messenger/Plugins";
@@ -509,6 +524,9 @@
 				A2E656DCA52448589F47E375 /* CDVFileTransfer.m in Sources */,
 				22D1BB59BF1E45D7B4CDAC19 /* CDVInAppBrowser.m in Sources */,
 				9368FE384E7F4699B8ECF265 /* CDVLogger.m in Sources */,
+				57CED1D1718B41F1B143F51C /* ActivityIndicator.m in Sources */,
+				1A765F21EF924B359F04B844 /* MBProgressHUD.m in Sources */,
+				63DD3BB4F31B44F3B4E86614 /* CDVDevice.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

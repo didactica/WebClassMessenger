@@ -41,6 +41,9 @@
     <feature name="Console">
         <param name="ios-package" value="CDVLogger" />
     </feature>
+    <feature name="ActivityIndicator">
+        <param name="ios-package" value="ActivityIndicator" />
+    </feature>
     <allow-intent href="itms:*" />
     <allow-intent href="itms-apps:*" />
     <name>WebClass Messenger</name>
@@ -111,4 +114,7 @@
     <allow-navigation href="data:*" />
     <allow-navigation href="file:*" />
     <allow-navigation href="files:*" />
+    <feature name="Device">
+        <param name="ios-package" value="CDVDevice" />
+    </feature>
 </widget>

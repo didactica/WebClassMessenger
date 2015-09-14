@@ -20,8 +20,8 @@
 //  main.m
 //  WebClass Messenger
 //
-//  Created by ___FULLUSERNAME___ on ___DATE___.
-//  Copyright ___ORGANIZATIONNAME___ ___YEAR___. All rights reserved.
+//  Created by Pablo Garín on Sep 14, 2015.
+//  Copyright WebClass LMS 2015. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

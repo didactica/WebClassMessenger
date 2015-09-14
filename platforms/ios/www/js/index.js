@@ -66,11 +66,11 @@ var app = {
 					navigator.notification.alert("Debe ingresar su usuario y clave",function(){ $("input[name=usuario]").focus(); },"Error");
 				} else {
 					if( !checkConnection() ){
-						navigator.notification.activityStop();
+						ActivityIndicator.hide();
 						navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 						return;
 					}
-					navigator.notification.activityStart("Identificando","Comprobando datos...");
+					ActivityIndicator.show("Comprobando datos...");
 					if( checkConnection() ){
 						$.ajax({
 							url:url+"/gcm/login.php",
@@ -78,7 +78,7 @@ var app = {
 							dataType: 'json',
 							type:'POST',
 							success: function(resp){
-								navigator.notification.activityStop();
+								ActivityIndicator.hide();
 								if(resp.state==0){
 									user = resp.user;
 									window.localStorage.setItem("user",user);
@@ -90,13 +90,13 @@ var app = {
 								}
 							},
 							error: function(resp){
-								navigator.notification.activityStop();
+								ActivityIndicator.hide();
 								navigator.notification.alert("No se puede procesar su solicitud en estos momentos, por favor intentelo nuevamente más adelante.",function(){},"Error");
 								console.log(JSON.stringify(resp));
 							}
 						});
 					} else {
-						navigator.notification.activityStop();
+						ActivityIndicator.hide();
 					}
 				}
 			});
@@ -125,15 +125,15 @@ var app = {
 			$("#tabs-usuarios ul li").removeClass("active");
 			switch(tab){
 				case 'usuarios':
-					navigator.notification.activityStart("Cargando", "Cargando lista de usuarios");
+					ActivityIndicator.show("Cargando lista de usuarios");
 					$("#tabs-usuarios ul li a[href='#usuarios']").parents('li').addClass("active");
 					break;
 				case 'grupos':
-					navigator.notification.activityStart("Cargando", "Cargando grupos");
+					ActivityIndicator.show("Cargando grupos");
 					$("#tabs-usuarios ul li a[href='#grupos']").parents('li').addClass("active");
 					break;
 				case 'chats':
-					navigator.notification.activityStart("Cargando", "Cargando chats");
+					ActivityIndicator.show("Cargando chats");
 					$("#tabs-usuarios ul li a[href='#chats']").parents('li').addClass("active");
 					break;
 			}
@@ -163,15 +163,15 @@ var app = {
 						if(query.length>0){
 							switch(tab){
 								case 'chats':
-									navigator.notification.activityStart("Buscando", "Buscando chat");
+									ActivityIndicator.show("Buscando chat");
 									filtroUsuario = " where lower(c.nombre) like '%"+query+"%'";
 									break;
 								case 'usuarios':
-									navigator.notification.activityStart("Buscando", "Buscando contacto");
+									ActivityIndicator.show("Buscando contacto");
 									filtroUsuario = " where lower(nombre) like '%"+query+"%' or lower(apellido) like '%"+query+"%'";
 									break;
 								case 'grupos':
-									navigator.notification.activityStart("Buscando", "Buscando grupo");
+									ActivityIndicator.show("Buscando grupo");
 									filtroUsuario = " where lower(chat.nombre) like '%"+query+"%'";
 									break;
 							}
@@ -182,7 +182,7 @@ var app = {
 			});
 			app.populateUsers();
 		} else {
-			navigator.notification.activityStart("Cargando", "Cargando mensajes");
+			ActivityIndicator.show("Cargando mensajes");
 			$("#usuarios").hide();
 			$("#chat").show();
 			$("#buscar-usuario").hide();
@@ -195,7 +195,7 @@ var app = {
 			$("#btn-enviar").on("click",function(e){
 				var message = $("#inp-message").val();
 				if( message.length>0 || message!='' ){
-					navigator.notification.activityStart("Enviando","Enviando mensaje...");
+					ActivityIndicator.show("Enviando mensaje...");
 					var dt = new Date();
 					var fecha = dt.getFullYear()+"-"+((dt.getMonth()+1)<10?'0'+(dt.getMonth()+1):(dt.getMonth()+1))+'-'+(dt.getDate()<10?'0'+dt.getDate():dt.getDate())+' '+(dt.getHours()<10?'0'+dt.getHours():dt.getHours())+':'+(dt.getMinutes()<10?'0'+dt.getMinutes():dt.getMinutes())+':'+(dt.getSeconds()<10?'0'+dt.getSeconds():dt.getSeconds());
 					var postData = {
@@ -205,7 +205,7 @@ var app = {
 						fecha:fecha
 					};
 					if( !checkConnection() ){
-						navigator.notification.activityStop();
+						ActivityIndicator.hide();
 						navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 						return;
 					}
@@ -215,7 +215,7 @@ var app = {
 						type:'POST',
 						dataType:'json',
 						success:function(resp){
-							navigator.notification.activityStop();
+							ActivityIndicator.hide();
 							$("#inp-message").val("");
 							resp.data.class = "fa fa-ellipsis-h";
 							app.addMessage(resp.data);
@@ -223,7 +223,7 @@ var app = {
 						error: function(resp,error){
 							console.log(JSON.stringify(resp));
 							console.log(error);
-							navigator.notification.activityStop();
+							ActivityIndicator.hide();
 							navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
 						}
 					});
@@ -267,7 +267,7 @@ var app = {
 					}
 				});
 			} else {
-				navigator.notification.activityStop();
+				ActivityIndicator.hide();
 			}
 		}
 	},
@@ -285,7 +285,7 @@ var app = {
 				leer:true
 			};
 			if( !checkConnection() ){
-				navigator.notification.activityStop();
+				ActivityIndicator.hide();
 				navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 				return;
 			}
@@ -335,7 +335,7 @@ var app = {
 					//*/
 				});
 			} else {
-				navigator.notification.activityStop();
+				ActivityIndicator.hide();
 			}
 		}
 	},
@@ -568,7 +568,7 @@ var app = {
 				}
 				app.addMessage(data);
 			}
-			navigator.notification.activityStop();
+			ActivityIndicator.hide();
 		});
 		app.downloadMessages(function(){
 			app.readMessages();
@@ -688,7 +688,7 @@ var app = {
 					} else {
 						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Grupos para mostrar</h2></div>");
 					}
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 					$(".usuario").off("click");
 					$(".usuario").on("click",function(e){
 						$("#chat-window").html("");
@@ -727,7 +727,7 @@ var app = {
 					} else {
 						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Contactos en tu lista</h2></div>");
 					}
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 					$(".usuario").off("click");
 					$(".usuario").on("click",function(e){
 						var contacto = $(this).attr("data-rel");
@@ -746,7 +746,7 @@ var app = {
 					} else {
 						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Chats para mostrar</h2></div>");
 					}
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 					$(".usuario").off("click");
 					$(".usuario").on("click",function(e){
 						$("#chat-window").html("");
@@ -788,7 +788,7 @@ var app = {
 					} else {
 						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Grupos para mostrar</h2></div>");
 					}
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 					$(".usuario").off("click");
 					$(".usuario").on("click",function(e){
 						$("#chat-window").html("");
@@ -826,7 +826,7 @@ var app = {
 					} else {
 						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Contactos en tu lista</h2></div>");
 					}
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 					$(".usuario").off("click");
 					$(".usuario").on("click",function(e){
 						$("#chat-window").html("");
@@ -868,7 +868,7 @@ var app = {
 					} else {
 						$("#lista-usuarios").html("<div class='usuario clearfix text-center'><h2>No hay Chats para mostrar</h2></div>");
 					}
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 					$(".usuario").off("click");
 					$(".usuario").on("click",function(e){
 						$("#chat-window").html("");
@@ -943,7 +943,7 @@ var app = {
 					}
 				});
 			} else {
-				navigator.notification.activityStop();
+				ActivityIndicator.hide();
 			}
 		} else {
 			if( callback ){
@@ -1014,7 +1014,7 @@ var app = {
 						}
 					});
 				} else {
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 				}
 			}
 		} else {
@@ -1043,7 +1043,7 @@ var app = {
 				}
 			});
 		} else {
-			navigator.notification.activityStop();
+			ActivityIndicator.hide();
 		}
 	},
 	setTitle: function(){
@@ -1112,7 +1112,7 @@ var app = {
 		}
 	},
 	openChat: function(contacto){
-		navigator.notification.activityStart("Cargando","Cargando Chat...");
+		ActivityIndicator.show("Cargando Chat...");
 		$("#chat-window").html("");
 		var cct = new ChatContacto();
 		limitOffset = 0;
@@ -1141,7 +1141,7 @@ var app = {
 				null,
 				function(){
 					app.setTitle();
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 				}
 			);
 		});
@@ -1258,7 +1258,7 @@ var app = {
 		$("#select-source a").off("click");
 		$("#select-source a").on("click",function(){
 			if( !checkConnection() ){
-				navigator.notification.activityStop();
+				ActivityIndicator.hide();
 				navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 				return;
 			}
@@ -1304,11 +1304,11 @@ var app = {
 						options.chunkedMode = false;
 						
 						var ft = new FileTransfer();
-						navigator.notification.activityStart("Enviando","Enviando foto...");
+						ActivityIndicator.show("Enviando foto...");
 						if( checkConnection() ){
 							ft.upload(imageURI, url+"/gcm/upload.php", win, fail, options);
 						} else {
-							navigator.notification.activityStop();
+							ActivityIndicator.hide();
 						}
 					});
 				},function(e){
@@ -1344,7 +1344,7 @@ var app = {
 									silenciado=!silenciado;
 									app.inflateMenu();
 									if( !checkConnection() ){
-										navigator.notification.activityStop();
+										ActivityIndicator.hide();
 										navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 										return;
 									}
@@ -1636,7 +1636,7 @@ function textToColor(text){
 	return '#000000';
 }
 function downloadImage(imageURL,fileName){
-	navigator.notification.activityStart("Abrir","Cargando archivo, por favor espere...");
+	ActivityIndicator.show("Cargando archivo, por favor espere...");
 	var filePath;
 	window.requestFileSystem(
 		LocalFileSystem.PERSISTENT, 
@@ -1669,7 +1669,7 @@ function downloadImage(imageURL,fileName){
 				fileExists(filePath);
 			},
 			function(error) {
-				navigator.notification.activityStop();
+				ActivityIndicator.hide();
 				console.log("download error source " + error.source);
 				console.log("download error target " + error.target);
 				console.log("upload error code" + error.code);
@@ -1685,7 +1685,7 @@ function downloadImage(imageURL,fileName){
 	function fileExists(){
 		var ref = window.open(filePath, "_system", "location=yes")
 		ref.addEventListener("loadstop",function(){
-			navigator.notification.activityStop();
+			ActivityIndicator.hide();
 		});
 	}
 }
@@ -1796,11 +1796,11 @@ function listDirectory(entry){
 												options.chunkedMode = false;
 												
 												var ft = new FileTransfer();
-												navigator.notification.activityStart("Enviando","Enviando archivo...");
+												ActivityIndicator.show("Enviando archivo...");
 												if( checkConnection() ){
 													ft.upload(fileURI, url+"/gcm/upload.php", win, fail, options);
 												} else {
-													navigator.notification.activityStop();
+													ActivityIndicator.hide();
 												}
 											});
 										},function(e){
@@ -1868,27 +1868,27 @@ function win(resp){
 						$("#inp-message").val("");
 						resp.data.class = "fa fa-ellipsis-h";
 						app.addMessage(resp.data);
-						navigator.notification.activityStop();
+						ActivityIndicator.hide();
 					},
 					error: function(resp,error){
 						console.log(JSON.stringify(resp));
 						console.log(error);
-						navigator.notification.activityStop();
+						ActivityIndicator.hide();
 						navigator.notification.alert("No se pudo enviar el mensaje",function(){ $("#inp-message").focus(); },"Error");
 					}
 				});
 			} else {
-				navigator.notification.activityStop();
+				ActivityIndicator.hide();
 			}
 		}
 	}
 }
 function fail(error){
-	navigator.notification.activityStop();
+	ActivityIndicator.hide();
 }
 function crearGrupo(idToEdit){
 	if( !checkConnection() ){
-		navigator.notification.activityStop();
+		ActivityIndicator.hide();
 		navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 		return;
 	}
@@ -2057,7 +2057,7 @@ function crearGrupo(idToEdit){
 		);
 	}
 	function createGroup(){
-		navigator.notification.activityStart("Enviando","Enviando datos...");
+		ActivityIndicator.show("Enviando datos...");
 		var testURL = url+"/gcm/crear-grupo.php";
 		var params = {
 			nombre		: gName,
@@ -2092,10 +2092,10 @@ function crearGrupo(idToEdit){
 							app.verGrupo();
 						});
 					}
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 				});
 			} else {
-				navigator.notification.activityStop();
+				ActivityIndicator.hide();
 			}
 
 		} else {
@@ -2125,7 +2125,7 @@ function crearGrupo(idToEdit){
 											app.verGrupo();
 										});
 									}
-									navigator.notification.activityStop();
+									ActivityIndicator.hide();
 								}, 
 								function(response){
 									console.log("Error");
@@ -2134,7 +2134,7 @@ function crearGrupo(idToEdit){
 								options
 							);
 						} else{
-							navigator.notification.activityStop();
+							ActivityIndicator.hide();
 						}
 						//*/
 					});
@@ -2191,7 +2191,7 @@ function verUsuario(usuario){
 }
 function salirGrupo(){
 	if( !checkConnection() ){
-		navigator.notification.activityStop();
+		ActivityIndicator.hide();
 		navigator.notification.alert("Debe tener conexion a internet para realizar ésta acción.",null,"Sin Conexión");
 		return;
 	}
@@ -2234,7 +2234,7 @@ function salirGrupo(){
 						}
 					});
 				} else {
-					navigator.notification.activityStop();
+					ActivityIndicator.hide();
 				}
 			}
 		},

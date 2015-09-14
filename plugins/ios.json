@@ -47,6 +47,14 @@
                         {
                             "xml": "<feature name=\"Console\"><param name=\"ios-package\" value=\"CDVLogger\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"ActivityIndicator\"><param name=\"ios-package\" value=\"ActivityIndicator\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Device\"><param name=\"ios-package\" value=\"CDVDevice\" /></feature>",
+                            "count": 1
                         }
                     ]
                 }
@@ -141,6 +149,12 @@
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         },
         "cordova-plugin-console": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "org.apache.cordova.plugin.ActivityIndicator": {
+            "PACKAGE_NAME": "cl.webclass.webclassmessenger"
+        },
+        "cordova-plugin-device": {
             "PACKAGE_NAME": "cl.webclass.webclassmessenger"
         }
     },

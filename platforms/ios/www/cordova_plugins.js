@@ -238,6 +238,20 @@ module.exports = [
         "clobbers": [
             "console"
         ]
+    },
+    {
+        "file": "plugins/org.apache.cordova.plugin.ActivityIndicator/www/activityIndicator.js",
+        "id": "org.apache.cordova.plugin.ActivityIndicator.ActivityIndicator",
+        "clobbers": [
+            "ActivityIndicator"
+        ]
+    },
+    {
+        "file": "plugins/cordova-plugin-device/www/device.js",
+        "id": "cordova-plugin-device.device",
+        "clobbers": [
+            "device"
+        ]
     }
 ];
 module.exports.metadata = 
@@ -251,7 +265,9 @@ module.exports.metadata =
     "cordova-plugin-file-transfer": "1.2.1",
     "cordova-plugin-inappbrowser": "1.0.1",
     "cordova-plugin-whitelist": "1.0.0",
-    "cordova-plugin-console": "1.0.1"
+    "cordova-plugin-console": "1.0.1",
+    "org.apache.cordova.plugin.ActivityIndicator": "1.0.0",
+    "cordova-plugin-device": "1.0.1"
 }
 // BOTTOM OF METADATA
 });
