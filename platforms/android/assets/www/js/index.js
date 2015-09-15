@@ -43,6 +43,12 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
 		document.addEventListener("resume", app.resumeApp, false);
+		/*
+		if( device.platform=='iOS' ){
+			$(".heading").addClass("ios");
+			$("body").addClass("ios");
+		}
+		//*/
 		user = window.localStorage.getItem("user");
 		if( user==null ){
 			// CREACION DE TABLAS
@@ -237,6 +243,9 @@ var app = {
 					});
 				}
 			});
+			setInterval(function(){
+				$("*").scrollTop($("#messages").height());
+			},500);
 		}
 	},
     // Update DOM on a Received Event
@@ -465,7 +474,6 @@ var app = {
 		var template = Handlebars.compile(source);
 		var result = template(data);
 		$("#chat-window").append(result);
-		$("*").scrollTop($("#messages").height());
 	},
 	addChat: function(data){
 		if(typeof data.ultimafecha==='string'){
@@ -530,6 +538,7 @@ var app = {
 					notificacion.select(sql,chat,limitOffset,function(mensajes){
 						if(mensajes.length>0){
 							var firstMessage = $("#chat-window li:first");
+							// $("#chat").hide();
 							for(var i=mensajes.length; i>0; i--){
 								var mes = mensajes[i-1];
 								var data = {
@@ -554,6 +563,7 @@ var app = {
 								var result = template(data);
 								$("#chat-window").prepend(result);
 							}
+							// $("#chat").show();
 							$(document).scrollTop(firstMessage.offset().top-($(".moar-messages").height()+$(".heading").height()*3));
 						}
 						if( mensajes.length<20 ){
@@ -702,6 +712,7 @@ var app = {
 					ActivityIndicator.hide();
 					$(".usuario").off("click");
 					$(".usuario").on("click",function(e){
+						$("#chat").hide();
 						$("#chat-window").html("");
 						e.preventDefault();
 						chat = $(this).attr("data-rel");
@@ -724,6 +735,7 @@ var app = {
 								);
 							}
 						);
+						$("#chat").show();
 					});
 				});
 				break;
@@ -1459,9 +1471,17 @@ var app = {
 							bannerUsuarioHeight.bg = $(".banner-usuario").height();
 							bannerUsuarioHeight.span = ($(".banner-usuario span").css('font-size')).replace('px','');
 							app.setUserBanner(true);
+							var scrolled = false;
 							window.addEventListener('scroll', function(e){
-								app.setUserBanner(false);
+								scrolled = true;
 							});
+							// LESS WORK FOR THE SYSTEM SINCE WE ONLY CHECK EVERY 150uS
+							setInterval(function(){
+								if( scrolled ){
+									scrolled = false;
+									app.setUserBanner(false);
+								}
+							},150);
 						},
 						function(tx,error){
 							console.log("ATENCION!!!");

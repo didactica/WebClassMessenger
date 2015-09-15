@@ -163,7 +163,12 @@ h1 {
 	vertical-align:middle;
 	z-index:999;
 }
+body.ios, .heading.ios{
+	margin-top:20px;
+}
 .messages{
+	position:relative;
+	bottom:0px;
 	min-height:70vh;
 	overflow-Y:auto;
 	width:100%;
@@ -261,6 +266,14 @@ h1 {
 #btn-enviar{
 	outline:0;
 }
+#main-content{
+	position:relative;
+	bottom:0px!important;
+}
+#chat{
+	position:relative;
+	bottom:0px!important;
+}
 #chat-container{
 	margin:0!important;
 }
@@ -279,6 +292,10 @@ h1 {
 	left:45%;
 	font-size:28px;
 	color:#ddd;
+}
+ul#chat-window{
+	position:relative;
+	bottom:0px!important;
 }
 ul#chat-window li{
 	box-shadow:0px 2px 3px rgba(200,200,200,0.6);
