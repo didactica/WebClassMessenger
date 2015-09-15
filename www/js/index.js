@@ -107,15 +107,12 @@ var app = {
 				}
 			});
 		} else {
-			console.log("User is NOT null");
 			app.initializeUser();
 		}
     },
 	initializeUser: function(){
-		console.log("Initialize User");
 		// BDD
 		sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
-		console.log("Database Openned");
 		// BUILD MENU
 		app.inflateMenu();
 		secuencia = window.localStorage.getItem("secuencia")
@@ -129,9 +126,7 @@ var app = {
 		app.setTitle();
 		app.receivedEvent('deviceready');
 		if( chat==null || !chat){
-			console.log("get new messages");
 			app.getNewMessages();
-			console.log("done with new messages");
 			$("#lista-usuarios").html("");
 			$("#tabs-usuarios ul li").removeClass("active");
 			switch(tab){
@@ -192,9 +187,7 @@ var app = {
 					}
 				});
 			});
-			console.log("Populate Users Start");
 			app.populateUsers();
-			console.log("Populate Users End");
 		} else {
 			ActivityIndicator.show("Cargando mensajes");
 			$("#usuarios").hide();
@@ -264,7 +257,6 @@ var app = {
 		});
     },
 	pushRegistration: function(data) {
-		console.log(JSON.stringify(data));
 		// data.registrationId
 		if ( data.registrationId.length > 0 )
 		{
@@ -273,7 +265,6 @@ var app = {
 				id	 : data.registrationId,
 				os	 : device.platform
 			}
-			console.log(JSON.stringify(data));
 			if( checkConnection() ){
 				$.ajax({
 					url : url+'/gcm/saveDeviceId.php',
@@ -1973,7 +1964,6 @@ function crearGrupo(idToEdit){
 			},
 			// and DIS is done
 			function(){
-				console.log(JSON.stringify(data.users));
 				setName();
 			}
 		);
@@ -2024,8 +2014,6 @@ function crearGrupo(idToEdit){
 		}
 		function onFail(error){
 			addUsers();
-			console.log("User probably pressed back button");
-			console.log(error);
 		}
 	}
 	function addUsers(){
@@ -2101,7 +2089,6 @@ function crearGrupo(idToEdit){
 				params.foto = 1;
 			}
 		}
-		console.log(JSON.stringify(params));
 		if( typeof imageURI === 'undefined' ){
 			if( checkConnection() ){
 				$.ajax({
@@ -2110,7 +2097,7 @@ function crearGrupo(idToEdit){
 					dataType	: 'json',
 					contentType	: 'application/json; charset=utf-8',
 					success		: function( resp ){
-						console.log(JSON.stringify(resp));
+						// console.log(JSON.stringify(resp));
 					},
 					error		: function( error ){
 						console.log(JSON.stringify(error));

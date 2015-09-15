@@ -292,6 +292,7 @@ var app = {
 		}
 	},
 	pushMessage: function(data) {
+		console.log(JSON.stringify(data));
 		if( data.additionalData.read=='true' || data.additionalData.read ){
 			if( data.additionalData.chat==chat ){
 				$(".fa.fa-ellipsis-h").removeClass("fa-ellipsis-h").addClass("fa-check");
