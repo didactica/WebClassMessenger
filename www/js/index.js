@@ -16,6 +16,7 @@ var push;
 var userData;
 var userList;
 var lastUpdate;
+var textInterval;
 
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
 $("#tabs-usuarios li, #tabs-usuarios a").on("click",function(e){
@@ -126,6 +127,7 @@ var app = {
 		app.setTitle();
 		app.receivedEvent('deviceready');
 		if( chat==null || !chat){
+			clearInterval(textInterval);
 			app.getNewMessages();
 			$("#lista-usuarios").html("");
 			$("#tabs-usuarios ul li").removeClass("active");
@@ -236,8 +238,7 @@ var app = {
 					});
 				}
 			});
-			setInterval(function(){
-				$("*").scrollTop($("#messages").height());
+			textInterval = setInterval(function(){
 			},500);
 		}
 	},
@@ -465,6 +466,7 @@ var app = {
 		var template = Handlebars.compile(source);
 		var result = template(data);
 		$("#chat-window").append(result);
+		$("*").scrollTop($("#messages").height());
 	},
 	addChat: function(data){
 		if(typeof data.ultimafecha==='string'){
@@ -1643,18 +1645,38 @@ function backButton(){
 	navigator.app.exitApp();
 }
 function textToColor(text){
+	console.log("---------------------------- COLOR -------------------------------");
+	console.log(text);
+	console.log(typeof text);
 	if( typeof text === 'string' ){
 		var color = '';
 		var i = 0;
+		var uniqueChars = [];
+		text = text.toLowerCase();
+		for( var i =0; i<text.length; i++ ){
+			if( uniqueChars.indexOf(text.charCodeAt(i)) > -1 ){
+				continue;
+			}
+			uniqueChars.push( text.charCodeAt(i) );
+		}
+		color = uniqueChars.join("");
+		console.log(color);
+		/*
+		text = uniqueChars.join("");
 		while( i*3<text.length ){
 			color += text.charCodeAt(i*3);
 			i++;
 		}
+		//*/
 		color = Math.floor(color*16777215).toString(16);
-		color = color.replace(/[0-5]/g,'');
+		// color = color.replace(/[0-5]/g,'');
+		// color = color.replace(/[b-fB-F]/g,'');
 		color = color.substr(0,6)
+		console.log(color);
+		console.log("------------------------------------------------------------------");
 		return "#"+color;
 	}
+	console.log("No entro al 'IF'");
 	return '#000000';
 }
 function downloadImage(imageURL,fileName){

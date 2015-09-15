@@ -28,8 +28,8 @@ font-style: normal;
 * {
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
-
 body {
+/*    -webkit-overflow-scrolling: touch; */
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
     -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
@@ -39,6 +39,14 @@ body {
     margin:0px;
     padding:0px;
     width:100%;
+}
+#markup-container, #markup-container .row, #markup-container .col-md-12, #chat-container, #main-content, #chat{
+	height:100%;
+	position:absolute;
+	top:0px;
+	bottom:0px;
+	width:100%;
+	overflow:hidden;
 }
 
 /* Portrait layout (default) */
@@ -166,15 +174,14 @@ h1 {
 body.ios, .heading.ios{
 	margin-top:20px;
 }
-.messages{
-	position:relative;
-	bottom:0px;
-	min-height:70vh;
-	overflow-Y:auto;
+.messages, #usuarios{
+	position:absolute;
+	top:56px;
+	left:0px;
+	bottom:80px;
 	width:100%;
-	overflow-X:hidden;
-	margin:14px auto 65px;
-	z-index:-1;
+	overflow-Y:auto;
+	margin-bottom:30px;
 }
 .writemessage{
 	position:fixed;
@@ -182,7 +189,7 @@ body.ios, .heading.ios{
 	padding:10px;
 	width:100%;
 	left:0px;
-	background:#ffffff;
+	background:#ddd;
 	display:inline-block;
 	z-index:1000;
 }
@@ -267,12 +274,10 @@ body.ios, .heading.ios{
 	outline:0;
 }
 #main-content{
-	position:relative;
-	bottom:0px!important;
+	height:100%;
 }
 #chat{
-	position:relative;
-	bottom:0px!important;
+	height:100%;
 }
 #chat-container{
 	margin:0!important;
@@ -294,8 +299,10 @@ body.ios, .heading.ios{
 	color:#ddd;
 }
 ul#chat-window{
-	position:relative;
-	bottom:0px!important;
+	position:absolute;
+	top:0px;
+	bottom:0px;
+	width:100%;
 }
 ul#chat-window li{
 	box-shadow:0px 2px 3px rgba(200,200,200,0.6);
@@ -400,12 +407,11 @@ ul#chat-window li.right:after{
 	border-bottom:none;
 }
 #usuarios{
-	min-height:75vh;
-	overflow-Y:auto;
-	margin:56px auto;
-	position:relative;
+	overflow:scroll;
+	bottom:0px!important;
 }
 #lista-usuarios{
+	overflow-Y:hidden;
 	margin-top:42px;
 }
 .usuario, .usuario:visited, .usuario:hover{
@@ -619,7 +625,8 @@ strong.display-name{
 	background:#3c3;
 }
 .group-user{
-	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+	/* text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+	-webkit-text-stroke:1px #aaa; */
 }
 #ficha-usuario .banner-usuario{
 	background-color:rgb(22,128,202);

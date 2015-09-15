@@ -16,6 +16,7 @@ var push;
 var userData;
 var userList;
 var lastUpdate;
+var textInterval;
 
 $("#tabs-usuarios li, #tabs-usuarios a").off("click");
 $("#tabs-usuarios li, #tabs-usuarios a").on("click",function(e){
@@ -107,15 +108,12 @@ var app = {
 				}
 			});
 		} else {
-			console.log("User is NOT null");
 			app.initializeUser();
 		}
     },
 	initializeUser: function(){
-		console.log("Initialize User");
 		// BDD
 		sql = window.openDatabase("WebClassMobile", "1.0", "WebClass Educational Suite Mobile", 1024*1024*10);
-		console.log("Database Openned");
 		// BUILD MENU
 		app.inflateMenu();
 		secuencia = window.localStorage.getItem("secuencia")
@@ -129,9 +127,8 @@ var app = {
 		app.setTitle();
 		app.receivedEvent('deviceready');
 		if( chat==null || !chat){
-			console.log("get new messages");
+			clearInterval(textInterval);
 			app.getNewMessages();
-			console.log("done with new messages");
 			$("#lista-usuarios").html("");
 			$("#tabs-usuarios ul li").removeClass("active");
 			switch(tab){
@@ -192,9 +189,7 @@ var app = {
 					}
 				});
 			});
-			console.log("Populate Users Start");
 			app.populateUsers();
-			console.log("Populate Users End");
 		} else {
 			ActivityIndicator.show("Cargando mensajes");
 			$("#usuarios").hide();
@@ -243,8 +238,7 @@ var app = {
 					});
 				}
 			});
-			setInterval(function(){
-				$("*").scrollTop($("#messages").height());
+			textInterval = setInterval(function(){
 			},500);
 		}
 	},
@@ -264,7 +258,6 @@ var app = {
 		});
     },
 	pushRegistration: function(data) {
-		console.log(JSON.stringify(data));
 		// data.registrationId
 		if ( data.registrationId.length > 0 )
 		{
@@ -273,7 +266,6 @@ var app = {
 				id	 : data.registrationId,
 				os	 : device.platform
 			}
-			console.log(JSON.stringify(data));
 			if( checkConnection() ){
 				$.ajax({
 					url : url+'/gcm/saveDeviceId.php',
@@ -474,6 +466,7 @@ var app = {
 		var template = Handlebars.compile(source);
 		var result = template(data);
 		$("#chat-window").append(result);
+		$("*").scrollTop($("#messages").height());
 	},
 	addChat: function(data){
 		if(typeof data.ultimafecha==='string'){
@@ -1652,18 +1645,38 @@ function backButton(){
 	navigator.app.exitApp();
 }
 function textToColor(text){
+	console.log("---------------------------- COLOR -------------------------------");
+	console.log(text);
+	console.log(typeof text);
 	if( typeof text === 'string' ){
 		var color = '';
 		var i = 0;
+		var uniqueChars = [];
+		text = text.toLowerCase();
+		for( var i =0; i<text.length; i++ ){
+			if( uniqueChars.indexOf(text.charCodeAt(i)) > -1 ){
+				continue;
+			}
+			uniqueChars.push( text.charCodeAt(i) );
+		}
+		color = uniqueChars.join("");
+		console.log(color);
+		/*
+		text = uniqueChars.join("");
 		while( i*3<text.length ){
 			color += text.charCodeAt(i*3);
 			i++;
 		}
+		//*/
 		color = Math.floor(color*16777215).toString(16);
-		color = color.replace(/[0-5]/g,'');
+		// color = color.replace(/[0-5]/g,'');
+		// color = color.replace(/[b-fB-F]/g,'');
 		color = color.substr(0,6)
+		console.log(color);
+		console.log("------------------------------------------------------------------");
 		return "#"+color;
 	}
+	console.log("No entro al 'IF'");
 	return '#000000';
 }
 function downloadImage(imageURL,fileName){
@@ -1973,7 +1986,6 @@ function crearGrupo(idToEdit){
 			},
 			// and DIS is done
 			function(){
-				console.log(JSON.stringify(data.users));
 				setName();
 			}
 		);
@@ -2024,8 +2036,6 @@ function crearGrupo(idToEdit){
 		}
 		function onFail(error){
 			addUsers();
-			console.log("User probably pressed back button");
-			console.log(error);
 		}
 	}
 	function addUsers(){
@@ -2101,7 +2111,6 @@ function crearGrupo(idToEdit){
 				params.foto = 1;
 			}
 		}
-		console.log(JSON.stringify(params));
 		if( typeof imageURI === 'undefined' ){
 			if( checkConnection() ){
 				$.ajax({
@@ -2110,7 +2119,7 @@ function crearGrupo(idToEdit){
 					dataType	: 'json',
 					contentType	: 'application/json; charset=utf-8',
 					success		: function( resp ){
-						console.log(JSON.stringify(resp));
+						// console.log(JSON.stringify(resp));
 					},
 					error		: function( error ){
 						console.log(JSON.stringify(error));
