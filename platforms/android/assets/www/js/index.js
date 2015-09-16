@@ -1704,10 +1704,12 @@ function downloadImage(imageURL,fileName){
 			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
 				fileSystem.root.getFile(filePath, { create: false }, fileExists, fileDoesNotExist);
 			}, function(error){
+				console.log("------ ERROR 1 -------");
 				console.log(error);
 			}); 
 		}, 
 		function(error){
+			console.log("------ ERROR 2 -------");
 			console.log(error);
 		}
 	);
@@ -1745,7 +1747,8 @@ function downloadImage(imageURL,fileName){
 			mimeType,
 			{
 				error : function(e){
-					console.log(e);
+					console.log("------ ERROR 3 -------");
+					console.log(JSON.stringify(e));
 					ActivityIndicator.hide();
 				},
 				success: function(){

@@ -1737,27 +1737,30 @@ function downloadImage(imageURL,fileName){
 		);
 	}
 	function fileExists(){
-		console.log("fileDoesNotExist called");
+		console.log("fileExists called");
 		console.log(filePath);
 		console.log(mimeType);
-		cordova.plugins.fileOpener2.open(
-			filePath,
-			mimeType,
-			{
-				error : function(e){
-					console.log(e);
-					ActivityIndicator.hide();
-				},
-				success: function(){
-					ActivityIndicator.hide();
+		if( device.platform=='iOS' ){
+			cordova.plugins.fileOpener2.open(
+				filePath,
+				mimeType,
+				{
+					error : function(e){
+						console.log(JSON.stringify(e));
+						ActivityIndicator.hide();
+					},
+					success: function(){
+						ActivityIndicator.hide();
+					}
 				}
-			}
-		);
+			);
+		} else {
+			var ref = window.open(filePath, "_system", "location=yes")
+			ref.addEventListener("loadstop",function(){
+				ActivityIndicator.hide();
+			});
+		}
 		/*
-		var ref = window.open(filePath, "_system", "location=yes")
-		ref.addEventListener("loadstop",function(){
-			ActivityIndicator.hide();
-		});
 		//*/
 	}
 }
