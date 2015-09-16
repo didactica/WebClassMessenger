@@ -28,8 +28,8 @@ font-style: normal;
 * {
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
 }
-
 body {
+/*    -webkit-overflow-scrolling: touch; */
     -webkit-touch-callout: none;                /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
     -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
@@ -174,20 +174,13 @@ h1 {
 body.ios, .heading.ios{
 	margin-top:20px;
 }
-.messages{
+.messages, #usuarios{
 	position:absolute;
 	top:56px;
 	left:0px;
-	bottom:75px;
+	bottom:70px;
 	width:100%;
 	overflow-Y:auto;
-	/*
-	min-height:70vh;
-	width:100%;
-	overflow-X:hidden;
-	margin:14px auto 65px;
-	z-index:-1;
-	*/
 }
 .writemessage{
 	position:fixed;
@@ -305,10 +298,13 @@ body.ios, .heading.ios{
 	color:#ddd;
 }
 ul#chat-window{
+	padding-bottom:20px;
+	/*
 	position:absolute;
 	top:0px;
 	bottom:0px;
 	width:100%;
+	*/
 }
 ul#chat-window li{
 	box-shadow:0px 2px 3px rgba(200,200,200,0.6);
@@ -413,12 +409,11 @@ ul#chat-window li.right:after{
 	border-bottom:none;
 }
 #usuarios{
-	min-height:75vh;
-	overflow-Y:auto;
-	margin:56px auto;
-	position:relative;
+	overflow:scroll;
+	bottom:0px!important;
 }
 #lista-usuarios{
+	overflow-Y:hidden;
 	margin-top:42px;
 }
 .usuario, .usuario:visited, .usuario:hover{
@@ -900,4 +895,10 @@ strong.display-name{
 	right:5px;
 	font-size:14px;
 	color:#00F;
+}
+#menu-container-fixed{
+	position: fixed;
+    width: 100%;
+	top:56px;
+	z-index:300;
 }

@@ -466,7 +466,12 @@ var app = {
 		var template = Handlebars.compile(source);
 		var result = template(data);
 		$("#chat-window").append(result);
-		$("*").scrollTop($("#messages").height());
+		//$("#messages").scrollTop($("#messages").height());
+		app.scrollChatBottom();
+	},
+	scrollChatBottom: function(){
+		var scrollValue = $("#messages")[0].scrollHeight; // this is the scroll height after adding the message
+		$("#messages").scrollTop(scrollValue);
 	},
 	addChat: function(data){
 		if(typeof data.ultimafecha==='string'){
@@ -1261,6 +1266,7 @@ var app = {
 			$("#select-source a").hide();
 			$("#select-source").show('slow').promise().done(function(){
 				$("#select-source a").fadeIn();
+				app.scrollChatBottom();
 			});
 			/*
 			$(window).on("click.select-source",function(e){
@@ -1281,14 +1287,15 @@ var app = {
 			$("#select-source").hide(1000);
 			var action = parseInt($(this).attr("data-ref"));
 			var image = true;
+			var destination = Camera.DestinationType.FILE_URI; 
 			switch( action ){
 				case 1:
 					var source = Camera.PictureSourceType.PHOTOLIBRARY;
-					var destination = Camera.DestinationType.NATIVE_URI;
+					//var destination = Camera.DestinationType.NATIVE_URI;
 					break;
 				case 2:
 					var source = Camera.PictureSourceType.CAMERA;
-					var destination = Camera.DestinationType.NATIVE_URI;
+					//var destination = Camera.DestinationType.NATIVE_URI;
 					break;
 				case 3:
 					image = false;
@@ -1296,7 +1303,7 @@ var app = {
 			}
 			if( image ){
 				navigator.camera.getPicture(onSuccess, onFail, { 
-					quality			: 50,
+					quality			: 45,
 					destinationType	: destination,
 					sourceType		: source,
 					correctOrientation:true,
@@ -1308,32 +1315,38 @@ var app = {
 				browseFileSystem();
 			}
 			function onSuccess(imageURI) {
-				var options = new FileUploadOptions();
-				options.fileKey="file";
-				options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
-				
-				window.resolveLocalFileSystemURL(
-				imageURI,
-				function(fileEntry){
-					fileEntry.file(function(file){
-						options.mimeType = file.type;
-						options.chunkedMode = false;
-						
-						var ft = new FileTransfer();
-						ActivityIndicator.show("Enviando foto...");
-						if( checkConnection() ){
-							ft.upload(imageURI, url+"/gcm/upload.php", win, fail, options);
-						} else {
-							ActivityIndicator.hide();
-						}
+				console.log(imageURI);
+				setTimeout(function(){
+					var options = new FileUploadOptions();
+					options.fileKey="file";
+					options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
+					
+					window.resolveLocalFileSystemURL(
+					imageURI,
+					function(fileEntry){
+						fileEntry.file(function(file){
+							var mime = file.type||'image/jpeg';
+							options.mimeType = mime;
+							options.chunkedMode = false;
+							
+							var ft = new FileTransfer();
+							ActivityIndicator.show("Enviando foto...");
+							if( checkConnection() ){
+								ft.upload(imageURI, url+"/gcm/upload.php", win, fail, options);
+							} else {
+								ActivityIndicator.hide();
+							}
+						});
+					},function(e){
+						console.log("Error abriendo archivo.");
+						console.dir(e);
 					});
-				},function(e){
-					console.log("Error abriendo archivo.");
-					console.dir(e);
-				});
+				},100);
 			}
 			function onFail(message) {
-				console.log(message);
+				setTimeout(function(){
+					console.log(message);
+				},100);
 				//alert('Failed because: ' + message);
 			}
 		});
@@ -1645,9 +1658,6 @@ function backButton(){
 	navigator.app.exitApp();
 }
 function textToColor(text){
-	console.log("---------------------------- COLOR -------------------------------");
-	console.log(text);
-	console.log(typeof text);
 	if( typeof text === 'string' ){
 		var color = '';
 		var i = 0;
@@ -1660,7 +1670,6 @@ function textToColor(text){
 			uniqueChars.push( text.charCodeAt(i) );
 		}
 		color = uniqueChars.join("");
-		console.log(color);
 		/*
 		text = uniqueChars.join("");
 		while( i*3<text.length ){
@@ -1672,16 +1681,14 @@ function textToColor(text){
 		// color = color.replace(/[0-5]/g,'');
 		// color = color.replace(/[b-fB-F]/g,'');
 		color = color.substr(0,6)
-		console.log(color);
-		console.log("------------------------------------------------------------------");
 		return "#"+color;
 	}
-	console.log("No entro al 'IF'");
 	return '#000000';
 }
 function downloadImage(imageURL,fileName){
 	ActivityIndicator.show("Cargando archivo, por favor espere...");
 	var filePath;
+	var mimeType;
 	window.requestFileSystem(
 		LocalFileSystem.PERSISTENT, 
 		0, 
@@ -1691,7 +1698,6 @@ function downloadImage(imageURL,fileName){
 			var rootdir = fileSystem.root;
 			var fp = rootdir.toURL(); 
 			filePath = fp + "WebClass/" +fileName;
-
 			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
 				fileSystem.root.getFile(filePath, { create: false }, fileExists, fileDoesNotExist);
 			}, function(error){
@@ -1703,6 +1709,7 @@ function downloadImage(imageURL,fileName){
 		}
 	);
 	function fileDoesNotExist(){
+		console.log("fileDoesNotExist called");
 		var fileTransfer = new FileTransfer();
 		var uri = encodeURI(imageURL);
 
@@ -1727,10 +1734,28 @@ function downloadImage(imageURL,fileName){
 		);
 	}
 	function fileExists(){
+		console.log("fileDoesNotExist called");
+		console.log(filePath);
+		console.log(mimeType);
+		cordova.plugins.fileOpener2.open(
+			filePath,
+			mimeType,
+			{
+				error : function(e){
+					console.log(e);
+					ActivityIndicator.hide();
+				},
+				success: function(){
+					ActivityIndicator.hide();
+				}
+			}
+		);
+		/*
 		var ref = window.open(filePath, "_system", "location=yes")
 		ref.addEventListener("loadstop",function(){
 			ActivityIndicator.hide();
 		});
+		//*/
 	}
 }
 function browseFileSystem(folder){
@@ -1872,7 +1897,7 @@ function listDirectory(entry){
 	);
 }
 function win(resp){
-	// console.log(JSON.stringify(resp));
+	console.log(JSON.stringify(resp));
 	/*
 	if( (resp.response).indexOf('Error') > -1 ){
 		navigator.notification.alert("El archivo no se pudo enviar. Asegurese de que el formato es el correcto y que no supere los 8MB de tamaño.",null,"Error");
