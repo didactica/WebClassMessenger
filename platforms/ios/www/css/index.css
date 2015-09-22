@@ -630,20 +630,35 @@ strong.display-name{
 	/* text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 	-webkit-text-stroke:1px #aaa; */
 }
+#ficha-usuario{
+	height:100vh;
+	overflow-Y:scroll;
+}
 #ficha-usuario .banner-usuario{
 	background-color:rgb(22,128,202);
-	background-repeat: no-repeat; 
-	background-attachment: fixed; 
-	background-position: -50% 50%;
 	background-size:100%;
+	position:fixed;
+	width:100%;
+	color:#ccc;
+	height:56px;
+	overflow:hidden;
+	z-index:1001;
+}
+#ficha-usuario .banner-usuario.bg{
+	background-repeat: no-repeat; 
+	background-position: center center;
+	background-size:cover;
+	-o-background-size:cover;
+	-moz-background-size:cover;
+	-webkit-background-size:cover;
 	position:fixed;
 	width:100%;
 	color:#ccc;
 	height:40vh;
 	overflow:hidden;
-	z-index:1001;
+	z-index:1002;
 }
-#ficha-usuario .banner-usuario .nombre-usuario{
+#ficha-usuario .banner-usuario.bg .nombre-usuario{
 	position:absolute;
 	bottom:0px;
 	left:20px;
@@ -655,6 +670,18 @@ strong.display-name{
 	text-overflow: ellipsis;
 	padding:19px 10px;
 	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3),-1px 1px 1px rgba(0, 0, 0, 0.3),1px -1px 1px rgba(0, 0, 0, 0.3),-1px -1px 1px rgba(0, 0, 0, 0.3);
+}
+#ficha-usuario .banner-usuario .nombre-usuario{
+	position:absolute;
+	bottom:0px;
+	left:20px;
+	font-size:18px;
+	color:#fff;
+	width:90%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding:19px 10px;
 }
 #ficha-usuario .detalles-ficha-usuario{
 	background:#efefef;

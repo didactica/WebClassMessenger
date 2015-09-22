@@ -197,7 +197,8 @@ var app = {
 			$("#buscar-usuario").hide();
 			app.populateMessages();
 			$("#inp-message").on("focus",function(){
-				$("*").scrollTop($("#messages").height());
+				// $("*").scrollTop($("#messages").height());
+				app.scrollChatBottom();
 				app.readMessages();
 			});
 			$("#btn-enviar").off("click");
@@ -1155,9 +1156,12 @@ var app = {
 								var tObj = result.rows.item(0);
 								silenciado = tObj.silenciado==1;
 							}
+							ActivityIndicator.hide();
 							app.initializeUser();
 						},
 						function(tx,error){
+							console.log(error);
+							ActivityIndicator.hide();
 							app.initializeUser();
 						}
 					);
@@ -1481,7 +1485,8 @@ var app = {
 							bannerUsuarioHeight.span = ($(".banner-usuario span").css('font-size')).replace('px','');
 							app.setUserBanner(true);
 							var scrolled = false;
-							window.addEventListener('scroll', function(e){
+							$("#ficha-usuario").off('scroll');
+							$("#ficha-usuario").on('scroll', function(e){
 								scrolled = true;
 							});
 							// LESS WORK FOR THE SYSTEM SINCE WE ONLY CHECK EVERY 150uS
@@ -1527,9 +1532,23 @@ var app = {
 							bannerUsuarioHeight.bg = $(".banner-usuario").height();
 							bannerUsuarioHeight.span = ($(".banner-usuario span").css('font-size')).replace('px','');
 							app.setUserBanner(true);
+							var scrolled = false;
+							$("#ficha-usuario").off('scroll');
+							$("#ficha-usuario").on('scroll', function(e){
+								scrolled = true;
+							});
+							// LESS WORK FOR THE SYSTEM SINCE WE ONLY CHECK EVERY 150uS
+							setInterval(function(){
+								if( scrolled ){
+									scrolled = false;
+									app.setUserBanner(false);
+								}
+							},150);
+							/*
 							window.addEventListener('scroll', function(e){
 								app.setUserBanner(false);
 							});
+							//*/
 						},
 						function(tx,error){
 							console.log("ATENCION!!!");
@@ -1541,6 +1560,13 @@ var app = {
 		}
 	},
 	setUserBanner: function(initial){
+		var distanceY = $("#ficha-usuario").scrollTop();
+		if( distanceY>100 ){
+			$(".banner-usuario.bg").fadeOut();
+		} else {
+			$(".banner-usuario.bg").fadeIn();
+		}
+		/*
 		var distanceY = window.pageYOffset || document.documentElement.scrollTop;
 		var nh = bannerUsuarioHeight.bg-distanceY;
 		if( initial ){
@@ -1576,6 +1602,7 @@ var app = {
 				$(".banner-usuario span").css('font-size','100%');
 			}
 		}
+		//*/
 	}
 };
 
@@ -1704,12 +1731,10 @@ function downloadImage(imageURL,fileName){
 			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
 				fileSystem.root.getFile(filePath, { create: false }, fileExists, fileDoesNotExist);
 			}, function(error){
-				console.log("------ ERROR 1 -------");
 				console.log(error);
 			}); 
 		}, 
 		function(error){
-			console.log("------ ERROR 2 -------");
 			console.log(error);
 		}
 	);
@@ -1739,28 +1764,30 @@ function downloadImage(imageURL,fileName){
 		);
 	}
 	function fileExists(){
-		console.log("fileDoesNotExist called");
+		console.log("fileExists called");
 		console.log(filePath);
 		console.log(mimeType);
-		cordova.plugins.fileOpener2.open(
-			filePath,
-			mimeType,
-			{
-				error : function(e){
-					console.log("------ ERROR 3 -------");
-					console.log(JSON.stringify(e));
-					ActivityIndicator.hide();
-				},
-				success: function(){
-					ActivityIndicator.hide();
+		if( device.platform=='iOS' ){
+			cordova.plugins.fileOpener2.open(
+				filePath,
+				mimeType,
+				{
+					error : function(e){
+						console.log(JSON.stringify(e));
+						ActivityIndicator.hide();
+					},
+					success: function(){
+						ActivityIndicator.hide();
+					}
 				}
-			}
-		);
+			);
+		} else {
+			var ref = window.open(filePath, "_system", "location=yes")
+			ref.addEventListener("loadstop",function(){
+				ActivityIndicator.hide();
+			});
+		}
 		/*
-		var ref = window.open(filePath, "_system", "location=yes")
-		ref.addEventListener("loadstop",function(){
-			ActivityIndicator.hide();
-		});
 		//*/
 	}
 }
