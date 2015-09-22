@@ -1197,6 +1197,12 @@ var app = {
 			}
 			menu.push(
 				{
+					id:'go-edit-profile',
+					text:'Editar Perfil'
+				}
+			);
+			menu.push(
+				{
 					id:'btn-logout',
 					text:'Cerrar Sesión'
 				}
@@ -1356,6 +1362,10 @@ var app = {
 				},100);
 				//alert('Failed because: ' + message);
 			}
+		});
+		$("#go-edit-profile").off("click");
+		$("#go-edit-profile").on("click",function(e){
+			$("#profile-editor").css({"display":'block'});
 		});
 		$("#silenciar-chat").off("click");
 		$("#silenciar-chat").on("click",function(e){
@@ -1657,6 +1667,10 @@ function timeSince(date) {
 	//*/
 }
 function backButton(){
+	if( $("#profile-editor").css("display") == 'block' ){
+		$("#profile-editor").css({"display":'none'});
+		return;
+	}
 	if( $("#select-source").css("display") == 'block' ){
 		$("#select-source").hide();
 		return;

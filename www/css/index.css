@@ -929,3 +929,28 @@ strong.display-name{
 	top:56px;
 	z-index:300;
 }
+#profile-editor{
+	background-color:#ffffff;
+	display:none;
+	position:absolute;
+	top:0px;
+	bottom:0px;
+	left:0px;
+	right:0px;
+	z-index:10002;
+}
+#profile-editor .navbar{
+	position:fixed;
+	background:rgb(22,128,202);
+	top:0px;
+	left:0px;
+	height:56px;
+	line-height:56px;
+	width:100%;
+	color:#fff;
+	font-size:18px;
+	padding-left:10px;
+}
+#profile-editor .navbar i.fa{
+	color:#ffffff;
+}
