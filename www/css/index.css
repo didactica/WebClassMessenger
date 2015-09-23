@@ -953,4 +953,31 @@ strong.display-name{
 }
 #profile-editor .navbar i.fa{
 	color:#ffffff;
+	font-size:26px;
+	margin-top:4px;
+}
+#profile-editor .content{
+	position:absolute;
+	top:56px;
+	bottom:0px;
+	left:0px;
+	right:0px;
+	background:#ddd;
+}
+#profile-editor .content .user-profile-image{
+	position:relative;
+	left:10px;
+	right:10px;
+	margin:0 auto;
+	top:10px;
+}
+#profile-editor .content .user-profile-name{
+	position:absolute;
+	left:10px;
+	right:10px;
+	background-color:#bbb;
+	border-radius:5%;
+	-o-border-radius:5%;
+	-moz-border-radius:5%;
+	-webkit-border-radius:5%;
 }

@@ -1366,6 +1366,8 @@ var app = {
 		$("#go-edit-profile").off("click");
 		$("#go-edit-profile").on("click",function(e){
 			$("#profile-editor").css({"display":'block'});
+			//TODO: LOAD CURRENT USER DATA
+			app.loadProfileData();
 		});
 		$("#silenciar-chat").off("click");
 		$("#silenciar-chat").on("click",function(e){
@@ -1568,6 +1570,47 @@ var app = {
 				}
 			);
 		}
+	},
+	loadProfileData: function(){
+		var data;
+		sql.transaction(
+			function(tx){
+				tx.executeSql(
+					"SELECT * FROM contacto WHERE idusuario='"+user+"';",
+					[],
+					function(tx,result){
+						if( result.rows!=null && result.rows.length>0 ){
+							data = result.rows.item(0);
+						}
+					},
+					function(tx,error){
+						console.log(error);
+					}
+				);
+			},
+			null,
+			function(){
+				var foto = data.foto;
+				var nombre = data.nombre;
+				var img = new Image();
+				img.src = foto;
+				img.addEventListener(
+					'click',
+					function(evt){
+						console.log("boom: we have an image biaatchhh!!");
+						//TODO: prompt image selection for new image
+					},
+					false
+				);
+				$("#profile-editor .user-profile-image").html(img);
+				$("#profile-editor .user-profile-name span").html(nombre);
+				$("#profile-editor .user-profile-name i.fa").off("click");
+				$("#profile-editor .user-profile-name i.fa").on("click",function(e){
+					console.log("boom: we have a name biaatchhh!!");
+					//TODO: prompt textbox for new name
+				});
+			}
+		);
 	},
 	setUserBanner: function(initial){
 		var distanceY = $("#ficha-usuario").scrollTop();
