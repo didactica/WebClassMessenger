@@ -962,22 +962,42 @@ strong.display-name{
 	bottom:0px;
 	left:0px;
 	right:0px;
-	background:#ddd;
+	background:#fff;
+	overflow:hidden;
+	text-overflow:ellipsis;
 }
 #profile-editor .content .user-profile-image{
-	position:relative;
-	left:10px;
-	right:10px;
-	margin:0 auto;
-	top:10px;
+	text-align:center;
+	padding:5px;
+	margin:20px;
+	border-radius:10px;
+	-o-border-radius:10px;
+	-moz-border-radius:10px;
+	-webkit-border-radius:10px;
+	background:#ededed;
+    -webkit-box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    -moz-box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+}
+#profile-editor .content .user-profile-image img{
+	display:inline-block;
 }
 #profile-editor .content .user-profile-name{
-	position:absolute;
-	left:10px;
-	right:10px;
-	background-color:#bbb;
-	border-radius:5%;
-	-o-border-radius:5%;
-	-moz-border-radius:5%;
-	-webkit-border-radius:5%;
+	background-color:#ffd;
+	border-radius:10px;
+	-o-border-radius:10px;
+	-moz-border-radius:10px;
+	-webkit-border-radius:10px;
+	text-align:center;
+	margin:20px;
+    -webkit-box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    -moz-box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+    box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
+}
+#profile-editor .content .user-profile-name span{
+	display:inline-block;
+	margin:10px;
+	text-align:left;
+	padding-right:10px;
+	border-right:2px solid black;
 }
