@@ -995,9 +995,24 @@ strong.display-name{
     box-shadow: 0 2px 5px rgba(100, 100, 100, 0.5);
 }
 #profile-editor .content .user-profile-name span{
+	font-size:18px;
 	display:inline-block;
+	height:40px;
+	line-height:40px;
 	margin:10px;
 	text-align:left;
 	padding-right:10px;
 	border-right:2px solid black;
+}
+#profile-editor .content .user-profile-name i.fa{
+	font-size:18px;
+	width:40px;
+	height:40px;
+	line-height:40px;
+	margin:10px;
+	background:rgba(0,0,0,0.05);
+	border-radius:5px;
+	-o-border-radius:5px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
 }

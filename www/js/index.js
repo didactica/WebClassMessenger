@@ -1655,7 +1655,6 @@ var app = {
 														console.log(JSON.stringify(resp));
 														resp = JSON.parse(resp.response);
 														if( resp.ok ){
-															//TODO: IT'S BEEN SAVED, NOW LETS RENEW THE LOCAL DB AND RELOAD VIEW
 															navigator.notification.alert("Se cambió la foto con éxito",null,"Exito!","Aceptar");
 															app.downloadUsers(function(){
 																app.loadProfileData();
@@ -1705,7 +1704,6 @@ var app = {
 									dataType: 'json',
 									success:function(resp){
 										if( resp.ok ){
-											//TODO: IT'S BEEN SAVED, NOW LETS RENEW THE LOCAL DB AND RELOAD VIEW
 											navigator.notification.alert("Se cambió el nombre con éxito",null,"Exito!","Aceptar");
 											app.downloadUsers(function(){
 												app.loadProfileData();

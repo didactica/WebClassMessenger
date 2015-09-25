@@ -1028,6 +1028,7 @@ var app = {
 								}
 							}
 							if( callback && t=='chat'){ // chat es el ultimo elemento del arreglo
+								console.log("Ejecutando callback");
 								callback();
 							}
 						},
@@ -1197,6 +1198,12 @@ var app = {
 			}
 			menu.push(
 				{
+					id:'go-edit-profile',
+					text:'Editar Perfil'
+				}
+			);
+			menu.push(
+				{
 					id:'btn-logout',
 					text:'Cerrar Sesión'
 				}
@@ -1322,7 +1329,6 @@ var app = {
 				browseFileSystem();
 			}
 			function onSuccess(imageURI) {
-				console.log(imageURI);
 				setTimeout(function(){
 					var options = new FileUploadOptions();
 					options.fileKey="file";
@@ -1356,6 +1362,12 @@ var app = {
 				},100);
 				//alert('Failed because: ' + message);
 			}
+		});
+		$("#go-edit-profile").off("click");
+		$("#go-edit-profile").on("click",function(e){
+			$("#profile-editor").css({"display":'block'});
+			//TODO: LOAD CURRENT USER DATA
+			app.loadProfileData();
 		});
 		$("#silenciar-chat").off("click");
 		$("#silenciar-chat").on("click",function(e){
@@ -1559,6 +1571,161 @@ var app = {
 			);
 		}
 	},
+	loadProfileData: function(){
+		var data;
+		sql.transaction(
+			function(tx){
+				tx.executeSql(
+					"SELECT * FROM contacto WHERE idusuario='"+user+"';",
+					[],
+					function(tx,result){
+						if( result.rows!=null && result.rows.length>0 ){
+							data = result.rows.item(0);
+						}
+					},
+					function(tx,error){
+						console.log(error);
+					}
+				);
+			},
+			null,
+			function(){
+				var foto = data.foto;
+				var nombre = data.nombre;
+				var img = new Image();
+				img.src = foto;
+				img.addEventListener(
+					'click',
+					function(evt){
+						evt.preventDefault();
+						navigator.notification.confirm(
+							"¿Seguro desea cambiar su foto? Ésta acción no se puede deshacer.",
+							function(buttonIndex){
+								var destination = Camera.DestinationType.FILE_URI; 
+								if( buttonIndex=="1" ){
+									var source = Camera.PictureSourceType.CAMERA;
+									navigator.camera.getPicture(onSuccess, onFail, { 
+										quality			: 45,
+										destinationType	: destination,
+										sourceType		: source,
+										correctOrientation:true,
+										saveToPhotoAlbum:true/*,
+										allowEdit		: true */
+									});
+								}
+								if( buttonIndex=="2" ){
+									var source = Camera.PictureSourceType.PHOTOLIBRARY;
+									navigator.camera.getPicture(onSuccess, onFail, { 
+										quality			: 45,
+										destinationType	: destination,
+										sourceType		: source,
+										correctOrientation:true,
+										saveToPhotoAlbum:true/*,
+										allowEdit		: true */
+									});
+								}
+							},
+							"Cambiar Foto",
+							["Tomar Foto","Galeria","Cancelar"]
+						);
+						function onSuccess(imageURI){
+							setTimeout(function(){
+								var options = new FileUploadOptions();
+								options.fileKey="file";
+								options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
+								options.params = {
+									user	: user,
+									foto	: true
+								}
+								window.resolveLocalFileSystemURL(
+									imageURI,
+									function(fileEntry){
+										fileEntry.file(
+											function(file){
+												var mime = file.type||'image/jpeg';
+												options.mimeType = mime;
+												options.chunkedMode = false;
+												
+												var ft = new FileTransfer();
+												ActivityIndicator.show("Enviando foto...");
+												if( checkConnection() ){
+													ft.upload(imageURI, url+"/gcm/updateProfile.php", profileUpdated, updateFailed, options);
+													function profileUpdated(resp){
+														ActivityIndicator.hide();
+														console.log(JSON.stringify(resp));
+														resp = JSON.parse(resp.response);
+														if( resp.ok ){
+															navigator.notification.alert("Se cambió la foto con éxito",null,"Exito!","Aceptar");
+															app.downloadUsers(function(){
+																app.loadProfileData();
+															});
+														}
+													}
+													function updateFailed(error){
+														console.log(JSON.stringify(error));
+													}
+												} else {
+													ActivityIndicator.hide();
+												}
+											}
+										);
+									},function(e){
+										console.log("Error abriendo archivo.");
+										console.dir(e);
+									}
+								);
+							},100);
+						}
+						function onFail(message){
+							console.log(message);
+						}
+					},
+					false
+				);
+				$("#profile-editor .user-profile-image").html(img);
+				$("#profile-editor .user-profile-name span").html(nombre);
+				$("#profile-editor .user-profile-name i.fa").off("click");
+				$("#profile-editor .user-profile-name i.fa").on("click",function(e){
+					navigator.notification.prompt(
+						"Ingrese en nuevo nombre:",
+						function( result ){
+							console.log(JSON.stringify(result));
+							if( result.buttonIndex==1 && (result.input1).length>0 ){
+								var params = {
+									user	: user,
+									nombre	: result.input1
+								}
+								console.log(JSON.stringify(params));
+								//*
+								$.ajax({
+									url:url+'/gcm/updateProfile.php',
+									data:params,
+									contentType:'application/json; chaset=utf-8',
+									dataType: 'json',
+									success:function(resp){
+										if( resp.ok ){
+											//TODO: IT'S BEEN SAVED, NOW LETS RENEW THE LOCAL DB AND RELOAD VIEW
+											navigator.notification.alert("Se cambió el nombre con éxito",null,"Exito!","Aceptar");
+											app.downloadUsers(function(){
+												app.loadProfileData();
+											});
+										}
+									},
+									error:function(resp, error){
+										console.log(JSON.stringify(resp));
+										console.log(JSON.stringify(error));
+									}
+								});
+								//*/
+							}
+						},
+						"Cambio de Nombre",
+						["Aceptar","Cancelar"]
+					);
+				});
+			}
+		);
+	},
 	setUserBanner: function(initial){
 		var distanceY = $("#ficha-usuario").scrollTop();
 		if( distanceY>100 ){
@@ -1657,6 +1824,10 @@ function timeSince(date) {
 	//*/
 }
 function backButton(){
+	if( $("#profile-editor").css("display") == 'block' ){
+		$("#profile-editor").css({"display":'none'});
+		return;
+	}
 	if( $("#select-source").css("display") == 'block' ){
 		$("#select-source").hide();
 		return;
