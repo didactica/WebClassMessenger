@@ -1111,7 +1111,7 @@ var app = {
 							if( typeof cObj !== 'undefined' ){
 								tDom.html("<a href='#' onclick='backButton(); return false;' class='pull-left'><i class='fa fa-angle-left fa-2x'></i></a>");
 								var foto = new Image();
-								foto.src = cObj.foto;
+								foto.src = cObj.display_image;
 								var imgCont = document.createElement("div")
 								imgCont.className = "foto-usuario";
 								imgCont.appendChild(foto);
@@ -1704,7 +1704,6 @@ var app = {
 									dataType: 'json',
 									success:function(resp){
 										if( resp.ok ){
-											//TODO: IT'S BEEN SAVED, NOW LETS RENEW THE LOCAL DB AND RELOAD VIEW
 											navigator.notification.alert("Se cambió el nombre con éxito",null,"Exito!","Aceptar");
 											app.downloadUsers(function(){
 												app.loadProfileData();

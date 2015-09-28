@@ -65,11 +65,11 @@ Chat.prototype.select = function(sql,filter,grupo,callback){
 		filter = " WHERE 1=1";
 	}
 	if( grupo ){
-		var query = "SELECT *,nombre as display_name,foto as display_image,(select fecha from mensaje_chat mjc where mjc.chat=chat.id order by id desc limit 1) as ultimafecha,(select mensaje from mensaje_chat mjc where mjc.chat=chat.id order by id desc limit 1) as ultimomensaje,(select count(1) from mensaje_chat mjc where mjc.remitente!='"+user+"' and mjc.chat=chat.id and mjc.leido=0) as mensajes, (select cct.nombre from mensaje_chat mjc left join chat_contacto cct on cct.contacto=mjc.remitente where mjc.chat=chat.id order by mjc.id desc limit 1) as lastusuario FROM chat "+filter+" and grupo=1";
+		var query = "SELECT *,nombre as display_name,foto as display_image,(select fecha from mensaje_chat mjc where mjc.chat=chat.id order by id desc limit 1) as ultimafecha,(select mensaje from mensaje_chat mjc where mjc.chat=chat.id order by id desc limit 1) as ultimomensaje,(select count(1) from mensaje_chat mjc where mjc.remitente!='"+user+"' and mjc.chat=chat.id and mjc.leido=0) as mensajes, (select ct.nombre from mensaje_chat mjc left join chat_contacto cct on cct.contacto=mjc.remitente left join contacto ct on ct.idusuario=cct.contacto where mjc.chat=chat.id order by mjc.id desc limit 1) as lastusuario FROM chat "+filter+" and grupo=1";
 	} else {
-		var query = "SELECT c.*,cct.nombre as display_name,ct.foto as display_image,(select fecha from mensaje_chat mjc where mjc.chat=c.id order by id desc limit 1) as ultimafecha,(select mensaje from mensaje_chat mjc where mjc.chat=c.id order by id desc limit 1) as ultimomensaje,(select count(1) from mensaje_chat mjc where mjc.remitente!='"+user+"' and mjc.chat=c.id and mjc.leido=0) as mensajes FROM chat c LEFT JOIN chat_contacto cct ON cct.chat=c.id and cct.contacto!='"+user+"' LEFT JOIN contacto ct ON cct.contacto=ct.idusuario and ct.idusuario!='" + user + "' "+filter+" and c.grupo=0";
+		var query = "SELECT c.*,ct.nombre as display_name,ct.foto as display_image,(select fecha from mensaje_chat mjc where mjc.chat=c.id order by id desc limit 1) as ultimafecha,(select mensaje from mensaje_chat mjc where mjc.chat=c.id order by id desc limit 1) as ultimomensaje,(select count(1) from mensaje_chat mjc where mjc.remitente!='"+user+"' and mjc.chat=c.id and mjc.leido=0) as mensajes FROM chat c LEFT JOIN chat_contacto cct ON cct.chat=c.id and cct.contacto!='"+user+"' LEFT JOIN contacto ct ON cct.contacto=ct.idusuario and ct.idusuario!='" + user + "' "+filter+" and c.grupo=0";
 	}
-	console.log(query);
+	// console.log(query);
 	if (!Date.now) {
 		Date.now = function() { return new Date().getTime(); }
 	}
